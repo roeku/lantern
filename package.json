@@ -1,0 +1,30 @@
+{
+  "name": "lantern",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest --run",
+    "typecheck": "tsc --noEmit",
+    "server": "tsx src/server/index.ts",
+    "client": "vite",
+    "dev": "node scripts/dev.mjs",
+    "tunnel": "cloudflared tunnel --url http://localhost:5173",
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0",
+    "@types/node": "24.19.2",
+    "@types/three": "0.187.0",
+    "@types/ws": "8.18.2",
+    "fast-check": "4.10.2",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vite": "8.3.6",
+    "vitest": "5.1.0"
+  },
+  "dependencies": {
+    "three": "0.187.0",
+    "ws": "8.22.1"
+  }
+}

@@ -1,0 +1,12 @@
+[ws] 4 clients joined wss://wagner-directories-jersey-planet.trycloudflare.com room ABCD; roles: showman, spectator, spectator, spectator
+┌─────────┬────────┬─────────────┬──────────┬──────────┬──────────┬─────────────┐
+│ (index) │ client │ snapsPerSec │ KBperSec │ rttMsP50 │ rttMsP95 │ openFullRun │
+├─────────┼────────┼─────────────┼──────────┼──────────┼──────────┼─────────────┤
+│ 0       │ 0      │ 19.5        │ 1.42     │ 124.6    │ 193.5    │ true        │
+│ 1       │ 1      │ 19.75       │ 1.43     │ 116.2    │ 181.5    │ true        │
+│ 2       │ 2      │ 19.75       │ 1.43     │ 128.7    │ 194.9    │ true        │
+│ 3       │ 3      │ 19.75       │ 1.43     │ 129.8    │ 200.3    │ true        │
+└─────────┴────────┴─────────────┴──────────┴──────────┴──────────┴─────────────┘
+[ws] 60.6s  mean snaps/s 19.69  mean KB/s 1.43  all open: true
+[ws] reconnect gap (drop -> first snapshot): 1017 ms
+[ws] server CPU 0.6% of one core (whole process, 1 room)  RSS MB mean 56.15 max 59.0

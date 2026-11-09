@@ -1,0 +1,12 @@
+[colyseus] 4 clients joined ws://localhost:2567 room ABCD; roles: showman, spectator, spectator, spectator
+┌─────────┬────────┬─────────────┬──────────┬──────────┬──────────┬─────────────┐
+│ (index) │ client │ snapsPerSec │ KBperSec │ rttMsP50 │ rttMsP95 │ openFullRun │
+├─────────┼────────┼─────────────┼──────────┼──────────┼──────────┼─────────────┤
+│ 0       │ 0      │ 19.51       │ 0.55     │ 0.4      │ 1        │ true        │
+│ 1       │ 1      │ 19.66       │ 0.56     │ 0.3      │ 1.1      │ true        │
+│ 2       │ 2      │ 19.66       │ 0.56     │ 0.3      │ 1.2      │ true        │
+│ 3       │ 3      │ 19.66       │ 0.56     │ 0.3      │ 1        │ true        │
+└─────────┴────────┴─────────────┴──────────┴──────────┴──────────┴─────────────┘
+[colyseus] 60.0s  mean snaps/s 19.62  mean KB/s 0.56  all open: true
+[colyseus] reconnect gap (drop -> first snapshot): 507 ms
+[colyseus] server CPU 1.0% of one core (whole process, 1 room)  RSS MB mean 62.39 max 66.3
