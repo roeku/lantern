@@ -30,7 +30,7 @@ Find the 3 tapes, play them at the counter, get out. The Thing only exists on ta
 | R | Restart the night (when paused or on the end card) |
 | Esc | Pause and open settings |
 
-Settings are on the pause screen: sensitivity, lens hold or toggle, reduced effects, FPS counter and the finale. Two-finger click is right mouse on a trackpad.
+Settings are on the pause screen: sensitivity, lens hold or toggle, reduced effects, FPS counter and quality (B). Pointer lock may need a click to start, and embedded iframes need `allow="pointer-lock"`. Two-finger click is right mouse on a trackpad.
 
 ## Scripts
 | Command | What it does |

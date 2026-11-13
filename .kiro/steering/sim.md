@@ -25,9 +25,9 @@ The focus box is narrower: `inFocusBox` is visible AND within `lensNoticeHalfAng
 - Meter and rush timers are tick counts converted from seconds with `tickHz`. Never use frame time.
 
 ## Chambers and acts
-The shop is four chambers in a row (`level.chambers`). Walking into the next one moves the checkpoint to its entry, cuts the tape (the echo goes) and swaps in that chamber's Thing, or none: chambers 1 and 2 have no Thing, so the tape is learned in safety.
+The shop is five chambers in a row (`level.chambers`). Walking into the next one moves the checkpoint to its entry, cuts the tape (the echo goes) and swaps in that chamber's Thing, or none: chambers 1, 2 and 4 have only an unseen follower (`shadow`, lens-visible, never attacks), so the tape is learned in safety.
 Act = chamber index, clamped to 1..3: chambers 1 and 2 are act 1 (Closing), chamber 3 act 2 (Rain), the VCR room act 3 (Blackout). Per-act arrays in `TUNING` (`act*`) set the Thing's speeds, rush length, cooldown and notice fill. Act 1's rush is slower than a sprint on purpose, so the first chase teaches that running works. From act 2 on, rush speed beats sprint speed, so running straight never wins and cover does.
-Blackout: in the hold finale for the whole VCR room, in the run finale from the moment the tape plays.
+Blackout: the whole VCR room.
 
 ## Movement and the Thing
 - The player and the Thing move on the shop grid and never cross a wall or a closed door.
@@ -47,8 +47,8 @@ Blackout: in the hold finale for the whole VCR room, in the run finale from the 
 
 ## Tapes, VCR and the exit
 - Tapes sit at each chamber's entry and are taken by walking within `tapePickupRadiusM`. Taking one tops the battery up.
-- The VCR works only with all three tapes. Holding interact fills it, and a tape-self whose clip ended holding interact at the VCR keeps holding it; letting go drains it at `vcrDecayFactor` of the fill rate. Hold finale: `vcrHoldSecHold`. Run finale: `vcrHoldSecRun`, then the Thing hunts without giving up (`rageSpeedMps`, below sprint speed).
-- When the tape has played the exit opens. Reaching it within `winRadiusM` wins. A catch wakes you at the checkpoint, keeps the tapes and the exit state, and ends the rage.
+- The VCR works only with all three tapes. Holding interact fills it, and a tape-self whose clip ended holding interact at the VCR keeps holding it; letting go drains it at `vcrDecayFactor` of the fill rate. Hold time is `vcrHoldSec` (10); a tape-self counts `echoVcrHoldRate` (2x).
+- When the tape has played the exit opens. Reaching it within `winRadiusM` wins. A catch wakes you at the checkpoint, keeps the tapes and the exit state.
 
 ## The tape (record and echo)
 - A record press starts a clip; the next press, or `recordMaxSec`, stops it. Stopping rewinds you to where the clip began, and your tape-self (the echo) replays the clip's inputs from there through the same `stepPlayer`, then stands where it ended in its last posture. A clip under `recordMinSec` is thrown away.
@@ -86,5 +86,4 @@ Blackout: in the hold finale for the whole VCR room, in the run finale from the 
 - The echo replays the recorded path exactly.
 - Each chamber can be solved with the echo and cannot be solved alone.
 - The VCR can be played by the echo, and the Thing tears a loud echo without catching a hidden player.
-- The run finale can be won by a straight sprint to the door.
 - The level is rectangular, every hiding spot opens onto an aisle, and every plate, hide and gate is reachable from its chamber entry.
