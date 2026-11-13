@@ -5,46 +5,42 @@ fileMatchPattern: "src/client/**"
 
 # Feel rules
 
-The client only reads sim state and produces inputs. Feel is made of presentation, never rules.
+The client only reads sim state and produces inputs. Feel is presentation, never rules.
 
-## Palette
-Do:
-- Near-black base, candle amber, cold blue-white beam, oxblood accent.
-- Wax, smoke, painted glass, brass, stone materials.
-- Lit 3D scenes in Three.js.
+## Feeling
+"I have to look, and looking is what gets me caught." Every client decision should serve that. Quiet dread with a dry wit, not a jump-scare corridor.
 
-Don't:
-- Add colours outside the palette.
-- Use bright flat UI colours or pure white fills.
-- Make it a jump-scare corridor. Tone is theatrical dread with comedy.
+## Look
+Palette: near-black, fluorescent green-white, REC red (the accent), tape-blue. Nothing outside it.
+- Lens down: clean, dim, readable world. No post-process.
+- Lens up: VHS post-process (grain, tracking bands, chroma bleed) on the lens view only. The contrast is what says "this is the tape".
+- Materials: plastic, magnetic tape, lino, rain, fluorescent tube, CRT glass.
 
-## Weighted events
-Each needs layered feedback (visual, audio, camera, light, UI/haptic-style). Don't ship one with fewer layers.
-- Candle snuffed: 6+ layers (for example wick hiss, light drop, smoke curl, camera kick, screen dim, audience sting).
-- Ghost rush: cart rumble rises with speed, beam flare, shake, everyone hears it coming.
-- Rope cut: creak then snap, rope whip, dust, a short hit-stop.
-- Screen falls: crash, shockwave, dust, lights flicker.
-- House lights up: sudden warm light on an ordinary room, silence, then the replay.
+## Weighted events (each needs layered feedback; do not ship one with fewer layers)
+- Thing notices you (biggest tell): hiss rises, tracking tear, REC beep stutters, vignette tightens, a half-second of silence.
+- Rush: screech, sub drone, FOV kick, camera trauma shake, lights flicker, everything else ducks.
+- Caught and rewind: tape-stop pitch drop, scrub bands, under 0.5 s back in play, cause shown for the first frames.
+- Tape found, or a chamber cleared: cassette clack, a chime that climbs one step of the B pentatonic per chamber, screen flash, banner (and the battery tops up on a tape).
+- Win card (the aftermath): silence, then a top-down map of the night drawn in stages (your route, your tape-selves, the Thing's path in red, "IT WAS HERE"), then a row per chamber counting in with a tick each, then totals counting up. The still is the share card until the TV replay exists.
+- Blackout: hum dies, rain swells, emergency light snaps on.
+- Replay reveal: silence, TV static, timecode, the Thing appears in old frames.
+Minor events get one or two layers only.
 
-Don't spend this weight on minor events.
-
-## Sound palette
-Do:
-- Glass armonica in one key only.
-- Cart rumble (volume follows cart speed), wick hiss, coat swish, rope creak and snap, thunder sheet, bellows, convent bell, screen crash.
-
-Don't:
-- Add sounds outside this list without updating this file.
-- Use a second musical key.
+## Sound
+- Web Audio synthesis only. Each sound has a transient, a body and a tail. No bare single-oscillator beeps.
+- One key: the 60 Hz mains hum (about B1). Do not add a second key.
+- Palette: door creak, door bang (positional, so you can hear where it is pushing), cassette clack, VCR motor, exit bolt, transformer thunk, fluorescent buzz, rain on glass, tape hiss (louder as the Thing nears), servo whirr, REC beep, lino footsteps, VCR rewind chirp, Thing idle and rush screech, tape-stop, TV static.
+- Repeated sounds vary in pitch by +/- 5 to 10 percent. One shared reverb. Buses and a limiter. Unlock audio on the game's own first input.
+- Do not add sounds outside this list without updating this file.
 
 ## UI
-Do:
-- Build all UI in-game with the palette: diegetic or styled HUD, custom cursor, custom menus and buttons.
-- Show lobby and join-by-link in the same look.
+- Diegetic or in-world: viewfinder timecode, battery bar, REC light. Embedded font only, never a system font.
+- Every number and bar reacts to change. States (title, death, end) are scenes with motion and sound, not centred boxes.
+- No browser defaults: native buttons, alerts, default cursor, focus rings, text selection, scrollbars.
+- Restart is one input.
 
-Don't:
-- Use browser-default controls: native buttons, inputs, selects, alert/confirm/prompt, default cursor, default focus rings without a styled replacement.
-- Keep keyboard focus visible and operable when styling replaces defaults.
+## Camera
+- Look is applied at render rate. Walk bob is small. Shake uses a trauma model on the world only, never the HUD, and is reserved for rush and catch.
 
 ## Input
-- Keyboard and mouse on a laptop. Friends are on a voice call, so no in-game voice or chat needed.
+- Keyboard and mouse with pointer lock, at a desk with headphones. The input that starts or restarts the game does nothing else on that frame.
