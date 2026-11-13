@@ -1,46 +1,53 @@
-# Tasks: campaign (v4)
+# Tasks: campaign (v5)
 
-Source of truth: `docs/design.md`, "v4: the campaign". Every tuning number goes in `TUNING` with a unit suffix. The sim stays pure and seeded. Each milestone ends with a build that could be submitted; if time runs short the last finished milestone is the game. Solvability is proved by scripted solutions in tests, not by video bots.
+Source of truth: `docs/design.md`, "v5". Rules: `.kiro/steering/difficulty.md`, `tone.md`, `feel.md`, `sim.md`. Every tuning number goes in `TUNING` with a unit suffix. The sim stays pure and seeded. Each phase ends with a build that could be submitted. A task is done only when it is **walked** (by whom is written next to it) and its weighted events have layers.
 
-- [ ] M1. Engine (11 to 15 Nov)
-  - [ ] M1.1 Tape-selves replay from recorded states (position, facing, posture per tick), not inputs
-  - [ ] M1.2 PAUSE, fast-forward and reverse on a tape-self; property tests: reverse of reverse is forward, fast-forward reaches the same end state, pause is idempotent
-  - [ ] M1.3 Two decks: a list of tape-selves with slots; property test: two tape-selves never share a slot
-  - [ ] M1.4 Data-driven levels: one file per tape (layout, chambers, plates, gates, Things, a solution script); a registry; the shop's current rooms become tapes 1 and 2
-  - [ ] M1.5 A solution script per level that must pass in CI and that fails when the tool is removed
-  - [ ] M1.6 Campaign save in localStorage: tapes cleared, medals, settings
-  - [ ] M1.7 Hub: the counter and shelf as the level select, medals on the boxes, return between tapes
-  - [ ] M1.8 Static deploy on a free host; the build runs from a URL
-  - [ ] M1.9 New-player playtest of tapes 1 and 2 from the hub, no help
+- [ ] L. Lockdown (Fri 13 to Sun 15 Nov)
+  - [x] L.1 Commit everything on a branch (`lockdown`)
+  - [ ] L.2 Public repo: license, About section, `.kiro/` at the root and not ignored
+  - [ ] L.3 Static deploy to a URL; the pointer-lock iframe note in the README
+  - [ ] L.4 CI: typecheck, tests, build; solution scripts for all five chambers including the finale, each failing without its tool
+  - [ ] L.5 Fix: the reveal is hollow. In chambers without a Thing, it follows unseen (6 to 10 m behind, never closer than 4 m, never attacking), visible only on the lens
+  - [ ] L.6 Fix: the finale has one readable solution (start recording from an alcove, walk to the VCR, rewind, your tape-self plays the tape as bait). Hold only, 10 s, the tape-self counts double. Hint after 2 catches. Remove the finale toggle
+  - [ ] L.7 Fix: chamber 3 fairness (sanctuary at the entry, never walks into a silent still player, the nearest tube stutters when it is within 5 m)
+  - [ ] L.8 Fix: chamber 2 (gate hold 3.5 s, the open gate looks open)
+  - [ ] L.9 Fix: HUD (objective hidden while the lens is up, guide below the viewfinder, STBY, no "WORKING TITLE", VHS tape spines, a pointer-lock failure message)
+  - [ ] L.10 Quality: a low preset, pixel ratio cap 1.5
+  - [ ] L.11 Steering: tone, difficulty (done), feel
+  - [ ] L.12 Hooks: level save runs its solution script; task completion appends to the evidence log; commit blocked on stray placeholders
+  - [ ] L.13 `docs/kiro-evidence.md` started with dates; `docs/placeholders.md`; `docs/video-shot-list.md`
+  - [ ] L.14 Gate: the author plays it from the URL; a stranger finishes it without help
 
-- [ ] M2. Spine (16 to 21 Nov)
-  - [ ] M2.1 Tape 3 Late Show: FF tool, the Blind Listener
-  - [ ] M2.2 Tape 4 Starship: REW tool, airlock set piece
-  - [ ] M2.3 Tape 5 Heist: Deck 2, lens-only hazards (lasers)
-  - [ ] M2.4 Lighting rig per film, fake volumetrics, dust, bloom, colour grade per tape
-  - [ ] M2.5 Adaptive score v1: layered stems driven by tension, notice and rush
-  - [ ] M2.6 Occlusion: walls muffle sound
-  - [ ] M2.7 Tape 2 Home Movies: the Thing's first appearance
-  - [ ] M2.8 New-player playtest of tapes 1 to 5
+- [ ] M1. Spine (Mon 16 to Fri 20 Nov)
+  - [ ] M1.1 Tape-selves replay from recorded states; tracking error when blocked
+  - [ ] M1.2 PAUSE and REVERSE; property tests: reverse of reverse is forward, replay is deterministic, pause is idempotent
+  - [ ] M1.3 No-soft-lock property: from any reachable state the exit can be reached or R recovers
+  - [ ] M1.4 Data-driven levels: one file per tape, a registry, a solution script each
+  - [ ] M1.5 A minimal hub in the store
+  - [ ] M1.6 The reveal ending: the Thing's full path replayed on the TV, visible, timecoded; the share frame
+  - [ ] M1.7 Tape 1 recut from today's chambers (training video)
+  - [ ] M1.8 Gate: the author plays tape 1 to the reveal on the URL; report credits
 
-- [ ] M3. Finish (22 to 27 Nov)
-  - [ ] M3.1 Tape 6 Infomercial: DUB tool, the Static
-  - [ ] M3.2 Tape 7 The Basement Tape: all tools, two Things, the cage set piece
-  - [ ] M3.3 Tape 8 Closing Time: everything, then the reveal
-  - [ ] M3.4 The dailies: a TV replay of each run with the Thing visible; the tape 8 version is the full reveal and the share frame
-  - [ ] M3.5 Ranks per tape (par clips, time, catches), ONE TAKE seal, ghost of your best run
-  - [ ] M3.6 The narrator: the training video voice, its lines per tape, synthesised blips
+- [ ] M2. Dread (Sat 21 to Thu 26 Nov)
+  - [ ] M2.1 Tape 2, home movie (PAUSE)
+  - [ ] M2.2 Tape 3, security tape (REVERSE, scouting)
+  - [ ] M2.3 Second deck
+  - [ ] M2.4 Thing behaviour v2 (one Thing, escalating)
+  - [ ] M2.5 Sound and adaptive music v1; a look per tape
+  - [ ] M2.6 The instruction tape
+  - [ ] M2.7 The aftermath: the store changes after each tape
+  - [ ] M2.8 Gate: two people who have never seen the game reach the reveal without help; note where each got stuck
 
-- [ ] M4. Polish (28 Nov to 1 Dec)
-  - [ ] M4.1 Accessibility: subtitles for key sounds, reduce flicker, hold or toggle for every input, shapes as well as colours
-  - [ ] M4.2 Gamepad
-  - [ ] M4.3 Performance: quality presets, dynamic resolution, a 60 fps target on an M1 Air
-  - [ ] M4.4 Balance from playtests; pars from real runs
-  - [ ] M4.5 Director's cut: one modifier per tape
-  - [ ] M4.6 Feel audit again; fix the top five
+- [ ] M3. Finish (Fri 27 Nov to Tue 1 Dec)
+  - [ ] M3.1 Tape 4, late-night broadcast (second deck, it learns your tapes); tape 5 only if gate 2 was clean
+  - [ ] M3.2 Ranks, ONE TAKE, ghost of your best run
+  - [ ] M3.3 Accessibility: reduce flicker, subtitles for key sounds
+  - [ ] M3.4 Measure on an M1 Air and a Windows laptop with integrated graphics; Chrome, Firefox, Safari, inside an iframe
+  - [ ] M3.5 Feel audit, fix its top 5
+  - [ ] M3.6 Content freeze at noon on Tue 1 Dec
 
-- [ ] Ship (1 to 3 Dec)
-  - [ ] S.1 Video under 3 minutes
-  - [ ] S.2 Kiro write-up and `docs/kiro-evidence.md`
-  - [ ] S.3 License, README, public repo with `.kiro/`
-  - [ ] S.4 Submit by 3 Dec
+- [ ] S. Ship (Tue 1 to Thu 3 Dec)
+  - [ ] S.1 Video under 3 minutes, public on YouTube
+  - [ ] S.2 Kiro write-up
+  - [ ] S.3 README, license in About, public repo with `.kiro/`
+  - [ ] S.4 Submit on 3 Dec

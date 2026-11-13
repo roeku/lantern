@@ -13,28 +13,15 @@ import {
 } from '../../src/sim';
 import { cellCenter } from '../../src/sim/grid';
 import { at, drive, run, tapRecord, wait } from './drive';
-import type { Finale, SimInput, SimState } from '../../src/sim';
+import { gone, inChamber, solveChamber1, solveChamber2, solveChamber3, solveChamber4 } from './solutions';
+import type { SimInput, SimState } from '../../src/sim';
 
 const SEC = TUNING.tickHz;
-
-/** Puts the run in chamber `n` with the player at its entry and a live Thing parked far away in it. */
-function inChamber(state: SimState, n: number): SimState {
-  const entry = LEVEL.checkpoints[n];
-  const spawn = LEVEL.chambers[n]?.thingSpawns[0];
-  if (!entry) throw new Error('entry');
-  const thing = spawn ? { ...state.thing, mode: 'wander' as const, pos: cellCenter(spawn), targetCell: spawn } : createDormantThing();
-  return { ...at(state, entry.x, entry.y), chamber: n, thing };
-}
-
-const gone = (s: SimState): SimState => ({ ...s, thing: createDormantThing() });
 
 describe('acts follow the chamber', () => {
   it('chambers 1 and 2 are act 1, then rain, then blackout in the VCR room', () => {
     expect([0, 1, 2, 3, 4].map((chamber) => actOf({ chamber }))).toEqual([1, 1, 2, 2, 3]);
-    expect(isBlackout({ chamber: 3, finale: 'hold', exitOpen: false })).toBe(false);
-    expect(isBlackout({ chamber: 4, finale: 'hold', exitOpen: false })).toBe(true);
-    expect(isBlackout({ chamber: 4, finale: 'run', exitOpen: false })).toBe(false);
-    expect(isBlackout({ chamber: 4, finale: 'run', exitOpen: true })).toBe(true);
+    expect([0, 1, 2, 3, 4].map((chamber) => isBlackout({ chamber }))).toEqual([false, false, false, false, true]);
   });
 });
 
@@ -103,39 +90,6 @@ describe('fairness', () => {
 });
 
 describe('the night can be solved', () => {
-  /** Chamber 1: record a walk to the plate. Your echo holds it while you walk to the gate. */
-  function solveChamber1(from: SimState): SimState {
-    let s = tapRecord(from);
-    s = drive(s, [{ x: 4.5, y: 10.5 }]);
-    s = wait(s, 0.4);
-    s = tapRecord(s);
-    expect(s.ghost).not.toBeNull();
-    return drive(s, [{ x: 3.5, y: 9.5 }, { x: 6.5, y: 9.5 }, { x: 10.5, y: 10.5 }, { x: 12.5, y: 10.5 }]);
-  }
-
-  /** Chamber 2: your echo takes the far plate. You stand on the near one, then run for the gate. */
-  function solveChamber2(from: SimState): SimState {
-    let s = tapRecord(from);
-    s = drive(s, [{ x: 13.5, y: 2.5 }]);
-    s = wait(s, 0.4);
-    s = tapRecord(s);
-    s = drive(s, [{ x: 19.5, y: 9.5 }, { x: 20.5, y: 4.5 }]);
-    for (let i = 0; i < 20 * SEC && s.gates[1] !== true; i++) s = step(s, NEUTRAL_INPUT);
-    expect(s.gates[1]).toBe(true);
-    return drive(s, [{ x: 21.5, y: 3.5 }, { x: 21.5, y: 2.5 }, { x: 23.5, y: 2.5 }], true);
-  }
-
-  /** Chamber 3: record the long walk to the plate in the far corner. Your echo parks there while you cross the short way. */
-  function solveChamber3(from: SimState): SimState {
-    let s = tapRecord(from);
-    s = drive(s, [{ x: 23.5, y: 9.5 }, { x: 24.5, y: 10.5 }]);
-    s = wait(s, 0.4);
-    s = tapRecord(s);
-    s = drive(s, [{ x: 30.5, y: 2.5 }, { x: 32.5, y: 2.5 }]);
-    for (let i = 0; i < 30 * SEC && s.gates[2] !== true; i++) s = step(s, NEUTRAL_INPUT);
-    return drive(s, [{ x: 33.5, y: 2.5 }, { x: 34.5, y: 2.5 }]);
-  }
-
   it('chamber 1 opens only with your echo on the plate', () => {
     const start = createState(1);
     const s = solveChamber1(start);
@@ -183,21 +137,6 @@ describe('the night can be solved', () => {
     expect(s.chamber).toBe(2);
   });
 
-  /** Chamber 4: your echo holds the far plate, which opens the inner gate. You go in and stand on the plate in there. */
-  function solveChamber4(from: SimState): SimState {
-    let s = tapRecord(from);
-    s = drive(s, [{ x: 34.5, y: 11.5 }]);
-    s = tapRecord(wait(s, 0.4));
-    expect(s.ghost).not.toBeNull();
-    s = drive(s, [{ x: 41.5, y: 5.5 }]);
-    for (let i = 0; i < 15 * SEC && s.gates[3] !== true; i++) s = step(s, NEUTRAL_INPUT);
-    expect(s.gates[3]).toBe(true);
-    s = drive(s, [{ x: 41.5, y: 7.5 }, { x: 42.5, y: 10.5 }]);
-    for (let i = 0; i < 5 * SEC && s.gates[4] !== true; i++) s = step(s, NEUTRAL_INPUT);
-    expect(s.gates[4]).toBe(true);
-    return drive(s, [{ x: 43.5, y: 10.5 }, { x: 45.5, y: 10.5 }]);
-  }
-
   const chainEntry = (): SimState => ({ ...inChamber(createState(4), 3), tapes: [true, true, false] });
 
   it('chamber 4: your echo holds the far plate, you take the one inside and walk out', () => {
@@ -213,8 +152,8 @@ describe('the night can be solved', () => {
     expect(s.plates[4]).toBe(false);
   });
 
-  function toVcr(finale: Finale): SimState {
-    let s = createState(3, finale);
+  function toVcr(): SimState {
+    let s = createState(3);
     s = solveChamber1(s);
     s = solveChamber2(gone(s));
     s = solveChamber3(gone(s));
@@ -223,57 +162,101 @@ describe('the night can be solved', () => {
   }
 
   it('the whole way through: four chambers, three tapes, then the VCR', () => {
-    const s = toVcr('hold');
+    const s = toVcr();
     expect(s.chamber).toBe(4);
     expect(s.tapes).toEqual([true, true, true]);
     expect(s.caughtCount).toBe(0);
   });
-
-  it('hold finale: the exit opens once the tape has played, and stays shut before', () => {
-    let s = toVcr('hold');
-    s = run(gone(s), { ...NEUTRAL_INPUT, yawRad: Math.PI, interact: true }, 5 * SEC);
-    expect(s.exitOpen).toBe(false);
-    expect(s.vcrHoldTicks).toBeGreaterThan(0);
-    s = run(gone(s), { ...NEUTRAL_INPUT, yawRad: Math.PI, interact: true }, 20 * SEC);
-    expect(s.exitOpen).toBe(true);
-  });
-
-  it('run finale: play the tape, then reach the exit before the Thing', () => {
-    let s = toVcr('run');
-    s = run(gone(s), { ...NEUTRAL_INPUT, yawRad: Math.PI, interact: true }, 3 * SEC);
-    expect(s.exitOpen).toBe(true);
-    expect(s.rage).toBe(true);
-    s = drive(s, [{ x: 52.5, y: 9.5 }, { x: 53.5, y: 10.5 }, { x: 53.5, y: 12.0 }], true);
-    expect(s.caughtCount).toBe(0);
-    expect(s.won).toBe(true);
-  });
 });
 
-describe('the VCR room is solved with your tape-self', () => {
-  /** The VCR room with all three tapes, and your tape-self parked at the VCR holding E. */
-  function echoAtVcr(seed: number): SimState {
-    let s = inChamber({ ...createState(seed, 'hold'), tapes: [true, true, true] }, 4);
-    const front = { x: LEVEL.vcr.cx + 0.5, y: LEVEL.vcr.cy - 0.5 };
-    const hold: SimInput = { ...NEUTRAL_INPUT, yawRad: Math.PI, interact: true };
-    s = { ...s, ghost: { player: { ...s.player, pos: front, yawRad: Math.PI }, log: [hold], index: 1 } };
-    const hide = LEVEL.hides.find((h) => h.cx === 48);
-    if (!hide) throw new Error('hide');
-    return at(s, hide.cx + 0.5, hide.cy + 0.5);
+/** Arrives in the VCR room the way a player does (through the chamber change), so its Thing and sanctuary start for real. */
+function enterVcrRoom(seed: number): SimState {
+  let s = { ...createState(seed), tapes: [true, true, true], chamber: 3 };
+  s = at(s, 44.9, 10.5);
+  return drive(s, [{ x: 45.5, y: 10.5 }]);
+}
+
+/** F while crouched: starts a clip from where you are (the alcove) and keeps you low. */
+function recordCrouched(s: SimState, yaw: number): SimState {
+  const a = step(s, { ...NEUTRAL_INPUT, yawRad: yaw, crouch: true, record: true });
+  return step(a, { ...NEUTRAL_INPUT, yawRad: yaw, crouch: true });
+}
+
+describe('the VCR room: one solution a stranger can read', () => {
+  /**
+   * Start recording from the alcove, walk to the VCR, stop. Rewound, you are back in the alcove, crouched and hidden,
+   * while your tape-self walks out, parks at the VCR and plays the tape. The Thing goes for the noise and chews it.
+   * If it tears the tape before the tape has played, record again once it has slunk off.
+   */
+  function solve(seed: number): { state: SimState; clips: number } {
+    let s = enterVcrRoom(seed);
+    s = drive(s, [{ x: 48.5, y: 8.5 }, { x: 48.5, y: 6.5 }]);
+    s = wait(s, 0.3, { crouch: true });
+    let clips = 0;
+    while (!s.exitOpen && clips < 3 && s.caughtCount === 0) {
+      clips += 1;
+      s = recordCrouched(s, s.player.yawRad);
+      s = drive(s, [{ x: 48.5, y: 8.5 }, { x: 49.5, y: 9.5 }]);
+      s = wait(s, 0.4, { yawRad: Math.PI });
+      const stop = step(s, { ...NEUTRAL_INPUT, yawRad: Math.PI, record: true });
+      s = step(stop, { ...NEUTRAL_INPUT, yawRad: Math.PI, crouch: true });
+      for (let i = 0; i < 25 * SEC && !s.exitOpen && s.ghost; i++) s = step(s, { ...NEUTRAL_INPUT, crouch: true });
+      if (!s.exitOpen && !s.ghost) s = wait(s, 6, { crouch: true });
+    }
+    return { state: s, clips };
   }
 
-  it('your tape-self holding the VCR plays the tape while you are somewhere else', () => {
-    let s = gone(echoAtVcr(1));
-    s = wait(s, TUNING.vcrHoldSecHold + 0.5, { crouch: true });
+  it('plays the tape in one or two clips, and never gets you caught, whatever the seed', () => {
+    for (let seed = 1; seed <= 12; seed++) {
+      const { state, clips } = solve(seed);
+      expect(state.exitOpen, `seed ${seed}`).toBe(true);
+      expect(state.caughtCount, `seed ${seed}`).toBe(0);
+      expect(clips, `seed ${seed}`).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it('fails without the tape-self: holding the tape yourself gets you caught long before it has played', () => {
+    for (let seed = 1; seed <= 12; seed++) {
+      let s = drive(enterVcrRoom(seed), [{ x: 45.5, y: 9.5 }, { x: 49.5, y: 9.5 }]);
+      for (let i = 0; i < 20 * SEC && !s.exitOpen && s.caughtCount === 0; i++) s = step(s, { ...NEUTRAL_INPUT, yawRad: Math.PI, interact: true });
+      expect(s.exitOpen, `seed ${seed}`).toBe(false);
+      expect(s.caughtCount, `seed ${seed}`).toBe(1);
+    }
+  });
+
+  it('then you walk out of the door and win', () => {
+    let s = solve(5).state;
+    expect(s.exitOpen).toBe(true);
+    s = drive(s, [{ x: 48.5, y: 8.5 }, { x: 52.5, y: 9.5 }, { x: 53.5, y: 11.0 }, { x: 53.5, y: 12.0 }], true);
+    expect(s.won).toBe(true);
+  });
+
+  it('your tape-self counts double: it needs half the time you would', () => {
+    let s = gone(enterVcrRoom(1));
+    const front = { x: LEVEL.vcr.cx + 0.5, y: LEVEL.vcr.cy - 0.5 };
+    s = { ...s, ghost: { player: { ...s.player, pos: front, yawRad: Math.PI }, log: [{ ...NEUTRAL_INPUT, yawRad: Math.PI }], index: 1 } };
+    s = at(s, 48.5, 6.5);
+    s = wait(s, TUNING.vcrHoldSec / TUNING.echoVcrHoldRate + 0.3, { crouch: true });
     expect(s.exitOpen).toBe(true);
   });
 
-  it('the Thing goes for the loud tape-self and tears it, and you, hidden, are not caught', () => {
-    let s = echoAtVcr(2);
-    s = { ...s, thing: { ...s.thing, mode: 'wander', pos: { x: 53.5, y: 9.5 }, targetCell: { cx: 53, cy: 9 } } };
-    for (let i = 0; i < 15 * SEC && s.ghost; i++) s = step(s, { ...NEUTRAL_INPUT, crouch: true });
+  it('the Thing chews the tape for a moment (which keeps playing), then it is gone and the Thing slinks off', () => {
+    let s = gone(enterVcrRoom(2));
+    const front = { x: LEVEL.vcr.cx + 0.5, y: LEVEL.vcr.cy - 0.5 };
+    s = { ...s, ghost: { player: { ...s.player, pos: front, yawRad: Math.PI }, log: [{ ...NEUTRAL_INPUT, yawRad: Math.PI }], index: 1 } };
+    s = at(s, 48.5, 6.5);
+    s = { ...s, thing: { ...s.thing, mode: 'wander', pos: { x: front.x + 0.3, y: front.y }, targetCell: { cx: 49, cy: 9 } } };
+    s = wait(s, TUNING.tapeTearSec / 2, { crouch: true });
+    expect(s.ghost).not.toBeNull();
+    const mid = s.vcrHoldTicks;
+    s = wait(s, TUNING.tapeTearSec, { crouch: true });
     expect(s.ghost).toBeNull();
+    expect(s.vcrHoldTicks).toBeGreaterThan(mid);
+    // It heads for the far side, not toward the alcove
+    const target = s.thing.targetCell;
+    expect(target).not.toBeNull();
+    expect(Math.hypot((target?.cx ?? 0) - front.x, (target?.cy ?? 0) - front.y)).toBeGreaterThan(5);
     expect(s.caughtCount).toBe(0);
-    expect(s.vcrHoldTicks).toBeGreaterThan(0);
   });
 });
 

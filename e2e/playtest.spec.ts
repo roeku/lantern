@@ -5,16 +5,16 @@ import type { BotEvent } from './bot';
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- reads dev-only globals */
 
-// pnpm playtest                      records a whole night, hold finale
-// FINALE=run SEED=7 pnpm playtest    the run finale with a fixed seed
-const finale = process.env.FINALE === 'run' ? 'run' : 'hold';
+// pnpm playtest                 records a whole night with a bot
+// SEED=7 pnpm playtest          the same with a fixed seed
+const finale = 'night';
 const seed = Number(process.env.SEED ?? 1234);
 
-test(`a bot plays a whole night (${finale} finale, seed ${seed})`, async ({ page }, testInfo) => {
+test(`a bot plays a whole night (seed ${seed})`, async ({ page }, testInfo) => {
   test.setTimeout(15 * 60 * 1000);
   await page.addInitScript((f) => {
-    localStorage.setItem('rewind-night-settings', JSON.stringify({ sensitivity: 1, lensToggle: false, reducedEffects: false, showFps: true, finale: f }));
-  }, finale);
+    localStorage.setItem('rewind-night-settings', JSON.stringify({ sensitivity: 1, lensToggle: false, reducedEffects: false, showFps: true, quality: f }));
+  }, 'medium');
   await page.goto(`/?seed=${seed}`);
   await page.waitForTimeout(1500); // a second on the title
 

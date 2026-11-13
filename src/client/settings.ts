@@ -1,5 +1,3 @@
-import type { Finale } from '../sim';
-
 export interface Settings {
   /** Mouse and trackpad look speed multiplier. */
   sensitivity: number;
@@ -8,7 +6,8 @@ export interface Settings {
   /** Less shake, grain, tear and flash. */
   reducedEffects: boolean;
   showFps: boolean;
-  finale: Finale;
+  /** Medium: pixel ratio up to 1.5 and 2x anti-aliasing. Low: pixel ratio 1, no anti-aliasing. */
+  quality: 'low' | 'medium';
 }
 
 export const SENSITIVITY_MIN = 0.25;
@@ -22,7 +21,7 @@ const DEFAULTS: Settings = {
   lensToggle: false,
   reducedEffects: false,
   showFps: false,
-  finale: 'hold',
+  quality: 'medium',
 };
 
 export function loadSettings(): Settings {
@@ -35,7 +34,7 @@ export function loadSettings(): Settings {
       lensToggle: p.lensToggle === true,
       reducedEffects: p.reducedEffects === true,
       showFps: p.showFps === true,
-      finale: p.finale === 'run' ? 'run' : 'hold',
+      quality: p.quality === 'low' ? 'low' : 'medium',
     };
   } catch {
     return { ...DEFAULTS };

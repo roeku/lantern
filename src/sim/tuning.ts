@@ -79,15 +79,35 @@ export const TUNING = {
   doorClearM: 1.0,
 
   // Finale
-  vcrHoldSecHold: 20,
-  vcrHoldSecRun: 2,
-  /** Progress lost per second when you let go, as a fraction of the fill rate. */
+  /** Seconds of the tape to play at the VCR. */
+  vcrHoldSec: 10,
+  /** Your tape-self plays the tape this many times faster than you: at double speed on its own. */
+  echoVcrHoldRate: 2,
+  /** Progress lost per second when nobody holds it, as a fraction of the fill rate. */
   vcrDecayFactor: 0.5,
   /** Holding the VCR is loud. The Thing hears it from this far. */
   vcrNoiseRadiusM: 9,
-  /** In the run finale the Thing hunts without ever giving up, a little slower than a sprint. */
-  rageSpeedMps: 4.0,
   winRadiusM: 1.0,
+
+  /** The Thing chews a tape-self for this long before it is gone; the tape keeps playing meanwhile. */
+  tapeTearSec: 1.5,
+
+  // The unseen follower (chambers where nothing hunts you)
+  shadowFollowDistM: 8,
+  shadowMinDistM: 4,
+  /** It only appears once you have walked this far in the chamber. */
+  shadowMinTrailM: 6,
+  trailSpacingM: 0.3,
+  trailMaxSamples: 60,
+  /** A bigger jump than this in one sample is a rewind, not walking. */
+  trailJumpM: 2,
+
+  // Fairness at the entrance
+  /** After you arrive or wake, the Thing stays out of the entry radius for this long. */
+  entrySanctuarySec: 6,
+  entryKeepOutM: 4,
+  /** A silent, motionless player is never walked into: the Thing keeps one cell clear around you. */
+  silentGuardCells: 1,
 
   // Rewind
   rewindRestartSec: 0.4,

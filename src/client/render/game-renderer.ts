@@ -40,6 +40,8 @@ export interface RenderFrame {
   effects: number;
   /** The chamber you are in. Only it and the next one are lit. */
   chamber: number;
+  /** Something that hunts is within 5 m. The warning that needs neither the lens nor sound: the nearest tube stutters. */
+  thingNear: boolean;
   /** The clip's route on the floor: being recorded, or being replayed by the tape-self. */
   footprints: readonly { x: number; y: number }[];
   /** How many of them the tape-self has already walked (or all of them while recording). */
@@ -58,6 +60,9 @@ const WALL_H = 3.0;
 
 interface TubeLight {
   light: THREE.PointLight;
+  /** The fixture itself, with its own material so one tube can stutter alone. */
+  mat: THREE.MeshBasicMaterial;
+  pos: THREE.Vector3;
   base: number;
   broken: boolean;
   chamber: number;
@@ -75,18 +80,20 @@ export class GameRenderer {
   private readonly props = new ShopProps();
   private readonly echoProps = new EchoProps();
   private hemi!: THREE.HemisphereLight;
-  private tubeMat!: THREE.MeshBasicMaterial;
   private trauma = 0;
   private flashAmount = 0;
   private lastTimeSec = 0;
 
-  constructor(root: HTMLElement) {
+  private quality: 'low' | 'medium';
+
+  constructor(root: HTMLElement, quality: 'low' | 'medium') {
+    this.quality = quality;
     this.renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
     this.renderer.setClearColor(0x020303);
     this.canvas = this.renderer.domElement;
     root.appendChild(this.canvas);
 
-    this.target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: FEEL.msaaSamples });
+    this.target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: FEEL.msaaSamples[quality] });
     this.pass = new VhsPass(this.target.texture);
 
     this.scene.fog = new THREE.FogExp2(0x020303, 0.06);
@@ -163,16 +170,15 @@ export class GameRenderer {
         [x, 9.5, i === 2, i],
       ];
     });
-    const tubeMat = new THREE.MeshBasicMaterial({ color: 0xd6ffe6 });
-    this.tubeMat = tubeMat;
     for (const [x, z, broken, chamber] of spots) {
+      const tubeMat = new THREE.MeshBasicMaterial({ color: 0xd6ffe6 });
       const tube = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.05, 0.12), tubeMat);
       tube.position.set(x, WALL_H - 0.04, z);
       this.scene.add(tube);
       const light = new THREE.PointLight(0xd0f5e0, 9, 11, 2);
       light.position.set(x, WALL_H - 0.3, z);
       this.scene.add(light);
-      this.tubes.push({ light, base: 9, broken, chamber });
+      this.tubes.push({ light, mat: tubeMat, pos: new THREE.Vector3(x, WALL_H, z), base: 9, broken, chamber });
     }
   }
 
@@ -187,8 +193,17 @@ export class GameRenderer {
     this.scene.add(mesh);
   }
 
+  /** Switch quality without a reload: a new target if the anti-aliasing changed, then a resize. */
+  setQuality(quality: 'low' | 'medium'): void {
+    if (quality === this.quality) return;
+    this.quality = quality;
+    this.target.dispose();
+    this.target.samples = FEEL.msaaSamples[quality];
+    this.resize();
+  }
+
   resize(): void {
-    const dpr = Math.min(window.devicePixelRatio || 1, FEEL.renderPixelRatioMax);
+    const dpr = Math.min(window.devicePixelRatio || 1, FEEL.renderPixelRatioMax[this.quality]);
     const w = window.innerWidth;
     const h = window.innerHeight;
     this.renderer.setPixelRatio(dpr);
@@ -219,17 +234,34 @@ export class GameRenderer {
     // Only the chamber you are in and the one you can see through its gate are lit. Four tubes are always on, so the
     // number of lights, and with it the shader, never changes.
     const litA = Math.min(f.chamber, LEVEL.chambers.length - 2);
+    // The warning: when something that hunts is close, the tube nearest you stutters hard. No lens, no sound needed.
+    let warnIdx = -1;
+    if (f.thingNear) {
+      let best = Infinity;
+      this.tubes.forEach((t, i) => {
+        if (!(t.chamber === litA || t.chamber === litA + 1)) return;
+        const d = Math.hypot(t.pos.x - f.eye.x, t.pos.z - f.eye.z);
+        if (d < best) {
+          best = d;
+          warnIdx = i;
+        }
+      });
+    }
     this.tubes.forEach((t, i) => {
       t.light.visible = t.chamber === litA || t.chamber === litA + 1;
       if (!t.light.visible) return;
       const n = Math.sin(f.timeSec * 41 + i * 7) * Math.sin(f.timeSec * 13 + i);
-      const stutter = t.broken ? (n > 0.55 ? 0.15 : n > 0.1 ? 1 : 0.65) : 1 + n * 0.02;
+      let stutter = t.broken ? (n > 0.55 ? 0.15 : n > 0.1 ? 1 : 0.65) : 1 + n * 0.02;
+      if (i === warnIdx) {
+        const w = Math.sin(f.timeSec * 52) * Math.sin(f.timeSec * 17.3 + 1);
+        stutter = w > 0.1 ? 1.15 : w > -0.35 ? 0.35 : 0.04;
+      }
+      t.mat.color.setScalar((0.2 + 0.8 * lit) * Math.min(1, stutter));
       t.light.color.setHex(0xd0f5e0).lerp(EMERGENCY, f.blackout * (1 - f.houseLights));
       t.light.intensity =
         t.base * stutter * lit * (1 + f.houseLights * 0.6) * (f.thingMode === 'rush' ? 0.7 + 0.3 * Math.sin(f.timeSec * 70 + i) : 1);
     });
     this.hemi.intensity = 0.6 * (1 - f.blackout * 0.45) + f.houseLights * 0.9;
-    this.tubeMat.color.setScalar(0.2 + 0.8 * lit);
     (this.scene.fog as THREE.FogExp2).density = 0.06 + f.blackout * 0.03 - f.houseLights * 0.045;
     for (const l of this.props.emergencyLights) l.intensity = f.blackout * (1 - f.houseLights) * (6 + 3 * Math.sin(f.timeSec * 2.2));
     this.echoProps.update({

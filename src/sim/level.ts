@@ -16,7 +16,8 @@ import type { Vec2 } from './vec2';
  * Chamber 3 (x 23..33): the Thing patrols the ring. Sprint in your clip and your echo draws it away.
  * Chamber 4 (x 34..44): two gates, two plates, one job each. Your echo holds the far plate, which opens the inner gate.
  *                       You go in and stand on the plate in there, which opens the way out. No Thing: a breather.
- * Chamber 5 (x 45..55): the VCR room. Let your echo play the tape while you hide.
+ * Chamber 5 (x 45..55): the VCR room. Record from an alcove, walk to the VCR and hold E; rewound, you are back in the
+ *                       alcove, hidden, while your tape-self plays the tape and the Thing goes for it.
  */
 export const LEVEL_ROWS: readonly string[] = [
   '########################################################',
@@ -55,6 +56,8 @@ export interface ChamberDef {
   entry: Cell;
   /** 1 Closing, 2 Rain, 3 Blackout. */
   act: number;
+  /** No Thing hunts here, but it follows your route unseen (see shadow.ts). */
+  shadow: boolean;
   /** Where its Thing may start. Empty means no Thing lives here. */
   thingSpawns: readonly Cell[];
   /** Cells the Thing may patrol to: floor in this chamber, minus hiding spots. */
@@ -65,33 +68,36 @@ export interface ChamberDef {
  * Close delay per gate letter. The first gate snaps shut so the lesson lands in plain view: you see it open, you see it
  * shut before you get there. The rest give you time to step off a plate and through.
  */
-const GATE_DELAY_SEC: Readonly<Record<string, number>> = { p: 0.4, q: 2, r: 2, u: 2, w: 2 };
+const GATE_DELAY_SEC: Readonly<Record<string, number>> = { p: 0.4, q: 3.5, r: 2, u: 2, w: 2 };
 
 /** Spans, entries, acts and Thing spawns. Chambers 1, 2 and 4 are empty on purpose: the tape is learned in safety. */
 const CHAMBER_SPANS: ReadonlyArray<Omit<ChamberDef, 'patrolCells'>> = [
-  { xMin: 0, xMax: 11, entry: { cx: 1, cy: 10 }, act: 1, thingSpawns: [] },
-  { xMin: 12, xMax: 22, entry: { cx: 12, cy: 10 }, act: 1, thingSpawns: [] },
+  { xMin: 0, xMax: 11, entry: { cx: 1, cy: 10 }, act: 1, shadow: true, thingSpawns: [] },
+  { xMin: 12, xMax: 22, entry: { cx: 12, cy: 10 }, act: 1, shadow: true, thingSpawns: [] },
   {
     xMin: 23,
     xMax: 33,
     entry: { cx: 23, cy: 2 },
     act: 2,
+    shadow: false,
     thingSpawns: [
       { cx: 31, cy: 10 },
       { cx: 32, cy: 6 },
       { cx: 30, cy: 2 },
     ],
   },
-  { xMin: 34, xMax: 44, entry: { cx: 34, cy: 2 }, act: 2, thingSpawns: [] },
+  { xMin: 34, xMax: 44, entry: { cx: 34, cy: 2 }, act: 2, shadow: true, thingSpawns: [] },
   {
     xMin: 45,
     xMax: 55,
     entry: { cx: 45, cy: 10 },
     act: 3,
+    shadow: false,
+    // The north side, as far from the counter as the room allows: it takes a while to hear the tape
     thingSpawns: [
-      { cx: 53, cy: 9 },
-      { cx: 54, cy: 7 },
-      { cx: 49, cy: 8 },
+      { cx: 54, cy: 2 },
+      { cx: 46, cy: 2 },
+      { cx: 50, cy: 2 },
     ],
   },
 ];
@@ -113,8 +119,6 @@ export interface Level {
   checkpoints: readonly Vec2[];
   /** The way you face at the start: down chamber 1 toward the plate and the gate. Same convention as `PlayerState.yawRad`. */
   startYawRad: number;
-  /** Where the Thing waits when the run-to-the-door finale starts. */
-  rageSpawn: Cell;
 }
 
 function findAll(rows: readonly string[], ch: string): Cell[] {
@@ -160,7 +164,6 @@ export function buildLevel(rows: readonly string[]): Level {
     checkpoints: [cellCenter(one(rows, 'S')), ...chambers.slice(1).map((c) => cellCenter(c.entry))],
     // Facing +x: forward is (-sin yaw, -cos yaw)
     startYawRad: -Math.PI / 2,
-    rageSpawn: { cx: 46, cy: 2 },
   };
 }
 

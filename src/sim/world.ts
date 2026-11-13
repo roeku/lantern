@@ -36,6 +36,17 @@ export function thingGrid(level: Level, gates: readonly boolean[]): Grid {
   return { ...level.grid, walls };
 }
 
+/** The grid with a square of cells around `center` made solid, `radius` cells out. For keeping the Thing off a silent player. */
+export function guardCells(grid: Grid, center: Cell, radius: number): Grid {
+  const walls = grid.walls.slice();
+  for (let cy = center.cy - radius; cy <= center.cy + radius; cy++) {
+    for (let cx = center.cx - radius; cx <= center.cx + radius; cx++) {
+      if (cx >= 0 && cy >= 0 && cx < grid.width && cy < grid.height) walls[cy * grid.width + cx] = true;
+    }
+  }
+  return { ...grid, walls };
+}
+
 /** The chamber a position is in. Positions outside every span count as the last chamber. */
 export function chamberAt(level: Level, pos: Vec2): number {
   const cx = Math.floor(pos.x);

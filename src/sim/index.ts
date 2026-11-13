@@ -1,5 +1,6 @@
 export { TUNING, DT_SEC, secToTicks, perAct } from './tuning';
 export { step, vcrProgress, vcrHoldNeedTicks } from './step';
+export { shadowPos, pushTrail } from './shadow';
 export { createState, NEUTRAL_INPUT, actOf, isBlackout, tapesFound, pickThingSpawn, thingForChamber, createDormantThing } from './state';
 export type {
   SimState,
@@ -10,14 +11,13 @@ export type {
   CatchRecord,
   EchoRecording,
   Ghost,
-  Finale,
 } from './state';
 export { readLens, lensIsUp, lookDirection, eyeHeightM } from './lens';
 export type { LensReading } from './lens';
 export { noiseRadiusM } from './player';
 export { findInteraction } from './interact';
 export type { Interaction, InteractionKind } from './interact';
-export { playerGrid, sightGrid, thingGrid, chamberAt, isHidden, doorIndexAt } from './world';
+export { playerGrid, sightGrid, thingGrid, guardCells, chamberAt, isHidden, doorIndexAt } from './world';
 export { platesDown, stepGates } from './gates';
 export { stepEcho, stepGhost } from './echo';
 export { LEVEL, LEVEL_GRID, LEVEL_ROWS, buildLevel } from './level';

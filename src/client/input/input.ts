@@ -18,6 +18,7 @@ export class Input {
   private restartPending = false;
   private locked = false;
   private lockCallbacks: Array<(locked: boolean) => void> = [];
+  private errorCallbacks: Array<() => void> = [];
   private keyCallbacks: Array<(code: string) => void> = [];
 
   constructor(
@@ -25,6 +26,7 @@ export class Input {
     private readonly settings: Settings,
   ) {
     document.addEventListener('pointerlockchange', this.onLockChange);
+    document.addEventListener('pointerlockerror', this.onLockError);
     document.addEventListener('mousemove', this.onMouseMove);
     document.addEventListener('mousedown', this.onMouseDown);
     document.addEventListener('mouseup', this.onMouseUp);
@@ -110,6 +112,15 @@ export class Input {
     for (const cb of this.lockCallbacks) cb(now);
   };
 
+  private onLockError = (): void => {
+    for (const cb of this.errorCallbacks) cb();
+  };
+
+  /** The browser refused to lock the pointer: an iframe without allow="pointer-lock", a blocked permission, or a click too soon after Esc. */
+  onLockFailed(cb: () => void): void {
+    this.errorCallbacks.push(cb);
+  }
+
   private onMouseMove = (e: MouseEvent): void => {
     if (!this.locked) return;
     const lensFactor = this.lensHeld ? FEEL.lensMouseFactor : 1;
@@ -155,7 +166,8 @@ export class Input {
     try {
       await this.target.requestPointerLock();
     } catch {
-      // The browser refuses a new lock for a moment after Esc. The next click works.
+      // The browser refuses a new lock for a moment after Esc. Say so, so the click does not seem to do nothing.
+      this.onLockError();
     }
   }
 }

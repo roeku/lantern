@@ -48,7 +48,8 @@ export class Guide {
   private gateShutOnYou = false;
   private sprinted = false;
   private hidOnce = false;
-  private vcrHeldAloneSec = 0;
+  private clipHoldSec = 0;
+  private catchBase = 0;
   private lastPos: Vec2 | null = null;
 
   reset(): void {
@@ -60,7 +61,8 @@ export class Guide {
     this.gateShutOnYou = false;
     this.sprinted = false;
     this.hidOnce = false;
-    this.vcrHeldAloneSec = 0;
+    this.clipHoldSec = 0;
+    this.catchBase = 0;
   }
 
   update(f: GuideFrame): GuideLine {
@@ -68,6 +70,7 @@ export class Guide {
     if (c.chamber !== this.chamber) {
       this.chamber = c.chamber;
       this.chamberSec = 0;
+      this.catchBase = c.caughtCount;
     }
     this.chamberSec += f.dtSec;
     // Walking only: a rewind jumps metres in one tick and is not you moving
@@ -125,7 +128,7 @@ export class Guide {
     const gi = gateIndex('q');
     const g = c.ghost;
     const meOn = plateIndexAt(c.player.pos, 'q');
-    if (c.gates[gi] && g) return { objective, prompt: 'GO. THE GATE WAITS 2 SECONDS' };
+    if (c.gates[gi] && g) return { objective, prompt: 'GO. IT STAYS OPEN A MOMENT' };
     if (c.rec.active) {
       if (meOn >= 0) return { objective: 'YOU ARE ON TAPE', prompt: 'NOW [F]. IT WILL WAIT ON THIS PLATE' };
       return { objective: 'YOU ARE ON TAPE', prompt: 'END THE CLIP ON ONE PLATE, THEN [F]' };
@@ -133,7 +136,7 @@ export class Guide {
     if (g) {
       const ghostOn = plateIndexAt(g.player.pos, 'q');
       if (ghostOn >= 0) {
-        if (meOn >= 0 && meOn !== ghostOn) return { objective, prompt: 'GO. THE GATE WAITS 2 SECONDS' };
+        if (meOn >= 0 && meOn !== ghostOn) return { objective, prompt: 'GO. IT STAYS OPEN A MOMENT' };
         return { objective, prompt: 'IT WAITS THERE FOR YOU. STAND ON THE OTHER PLATE' };
       }
       if (g.index < g.log.length) return { objective, prompt: 'YOUR TAPE-SELF IS ON ITS WAY' };
@@ -190,20 +193,34 @@ export class Guide {
     return { objective, prompt: '[F] SEND YOUR TAPE-SELF TO THE FAR PLATE' };
   }
 
-  /** The counter. Teach: the tape is loud; let your tape-self hold it and hide. */
+  /**
+   * The counter. One solution a stranger can read: start recording from a blue alcove, walk to the VCR, hold E, stop.
+   * Rewound, you are back in the alcove, hidden, while your tape-self plays the tape and the Thing goes for it.
+   * After two catches in here the hint spells it out.
+   */
   private counter(c: SimState, f: GuideFrame): GuideLine {
-    const objective = c.exitOpen ? 'GET OUT' : 'PLAY THE TAPE AT THE COUNTER';
-    if (c.exitOpen) return { objective, prompt: c.rage ? 'RUN' : null };
+    const objective = c.exitOpen ? null : 'PLAY THE TAPE';
+    if (c.exitOpen) return { objective: 'GET OUT', prompt: null };
+    const p = c.player.pos;
     const atVcr = findInteraction(LEVEL, c.doors, c.tapes, c.player)?.kind === 'vcr';
-    const filling = c.vcrHoldTicks > f.prev.vcrHoldTicks;
-    const meHolding = filling && atVcr && c.player.interactHeld;
-    if (meHolding && !c.rec.active) this.vcrHeldAloneSec += f.dtSec;
+    const inAlcove = LEVEL.hides.some((h) => Math.floor(p.x) === h.cx && Math.floor(p.y) === h.cy);
+    const catches = c.caughtCount - this.catchBase;
+    const meHolding = atVcr && c.player.interactHeld;
+    if (c.rec.active) this.clipHoldSec += meHolding ? f.dtSec : 0;
+    else this.clipHoldSec = 0;
+
     if (c.rec.active) {
-      if (atVcr) return { objective: 'YOU ARE ON TAPE', prompt: c.player.interactHeld ? 'KEEP HOLDING, THEN [F]' : 'HOLD [E], THEN [F]' };
-      return { objective: 'YOU ARE ON TAPE', prompt: 'WALK TO THE VCR AND HOLD [E]' };
+      if (!atVcr) return { objective: 'YOU ARE ON TAPE', prompt: 'WALK TO THE VCR' };
+      if (!c.player.interactHeld) return { objective: 'YOU ARE ON TAPE', prompt: 'HOLD [E]' };
+      return { objective: 'YOU ARE ON TAPE', prompt: this.clipHoldSec > 1.2 ? 'NOW [F]' : 'HOLD [E]' };
     }
-    if (filling && !meHolding) return { objective, prompt: 'YOUR TAPE-SELF IS PLAYING IT. [C] HIDE IN AN ALCOVE' };
-    if (this.vcrHeldAloneSec > 2 || c.caughtCount > 0) return { objective, prompt: 'IT HEARS THE TAPE. [F] RECORD YOURSELF HOLDING IT' };
-    return { objective, prompt: atVcr ? null : 'THE VCR IS ON THE COUNTER' };
+    if (c.ghost) {
+      if (c.vcrHoldTicks > f.prev.vcrHoldTicks) return { objective, prompt: 'IT PLAYS THE TAPE. STAY LOW' };
+      if (c.ghost.index < c.ghost.log.length) return { objective, prompt: '[C] CROUCH. STAY STILL' };
+      return { objective, prompt: 'IT TORE THE TAPE. [F] AGAIN' };
+    }
+    if (catches >= 2) return { objective, prompt: 'FROM AN ALCOVE: [F], WALK TO THE VCR, HOLD [E], [F]' };
+    if (inAlcove) return { objective, prompt: '[F] RECORD' };
+    return { objective, prompt: this.chamberSec > 3 ? 'FIND A BLUE ALCOVE' : null };
   }
 }

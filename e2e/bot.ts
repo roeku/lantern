@@ -103,7 +103,9 @@ export function botMain(): void {
     | { t: 'wait'; sec: number }
     | { t: 'until'; label: string; cond: (c: any) => boolean }
     | { t: 'vcr' }
-    /** Stand at the VCR holding E for this long, so the clip ends holding it. */
+    /** Turn to face a point. */
+    | { t: 'face'; to: P }
+    /** Stand at the VCR holding E for this long. */
     | { t: 'holdVcr'; sec: number }
     /** Crouch where you are until cond. If abort turns true first, start the chamber's plan again. */
     | { t: 'crouchUntil'; label: string; cond: (c: any) => boolean; abort: (c: any) => boolean };
@@ -154,14 +156,16 @@ export function botMain(): void {
       until('the way out is open', (c) => c.gates[4] === true),
       go(45.5, 10.5),
     ],
-    // The counter: record from the alcove, let the echo walk out and hold the VCR, hide while it plays the tape
+    // The counter: record from an alcove, walk to the VCR, stop. Rewound, crouch in the alcove while the tape-self plays it
     () => [
       go(48.5, 7.5),
       go(48.5, 6.5),
+      wait(2),
       record(),
-      go(48.5, 7.5),
+      go(48.5, 8.5),
       go(49.5, 9.5),
-      { t: 'holdVcr', sec: 1.5 },
+      { t: 'face', to: { x: 49.5, y: 10.5 } },
+      wait(0.4),
       record(),
       {
         t: 'crouchUntil',
@@ -169,8 +173,9 @@ export function botMain(): void {
         cond: (c) => c.exitOpen,
         abort: (c) => c.ghost === null && !c.exitOpen,
       },
+      go(48.5, 8.5),
       go(52.5, 9.5, true),
-      go(53.5, 10.5, true),
+      go(53.5, 11.0, true),
       go(53.5, 12.0, true),
     ],
   ];
@@ -271,7 +276,8 @@ export function botMain(): void {
     }
 
     // Lens peek: look, and react to what the tape shows
-    if (now >= nextPeek && peekUntil === 0 && !rushing && th.mode !== 'dormant') {
+    // Once the door is open a player just goes: no more looking, and the Thing only matters if it rushes
+    if (now >= nextPeek && peekUntil === 0 && !rushing && th.mode !== 'dormant' && !c.exitOpen) {
       peekUntil = now + 800;
       nextPeek = now + 3500 + (c.tick % 7) * 300;
       key('KeyQ', true);
@@ -281,7 +287,7 @@ export function botMain(): void {
       if (reading.visible && !sawThing) {
         sawThing = true;
         say(`saw it on the lens at ${reading.distM.toFixed(1)} m (notice ${c.notice.toFixed(2)})`);
-        if (reading.distM < 11 && !c.rage) hideUntil = now + 5000;
+        if (reading.distM < 11) hideUntil = now + 5000;
         peekUntil = now; // lower immediately
       }
       if (now >= peekUntil) {
@@ -291,8 +297,7 @@ export function botMain(): void {
       }
     }
 
-    // In the run finale it never gives up, so hiding only waits to be caught: run instead
-    const danger = (rushing || th.mode === 'search') && !c.rage;
+    const danger = rushing || th.mode === 'search';
     if (danger) hideUntil = Math.max(hideUntil, now + 3000);
 
     // Hiding
@@ -375,6 +380,13 @@ export function botMain(): void {
       key('KeyW', false);
       key('ShiftLeft', false);
       if (st.cond(c)) advance(st.label);
+      return;
+    }
+    if (st.t === 'face') {
+      key('KeyW', false);
+      key('ShiftLeft', false);
+      g.input.yawRad = Math.atan2(-(st.to.x - me.x), -(st.to.y - me.y));
+      advance('facing the VCR');
       return;
     }
     if (st.t === 'holdVcr') {

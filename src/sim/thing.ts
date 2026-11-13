@@ -25,7 +25,8 @@ export interface ThingContext {
   hidden: boolean;
   noise: readonly NoiseSource[];
   act: number;
-  rage: boolean;
+  /** Set while the entry sanctuary lasts: where it is, so the Thing can keep out of it. */
+  sanctuaryEntry: Vec2 | null;
 }
 
 export interface ThingUpdate {
@@ -34,6 +35,15 @@ export interface ThingUpdate {
   /** The rush or search ran out this tick. */
   rushEnded: boolean;
   openedDoor: number | null;
+}
+
+/** After it tears a tape it slinks off to the part of its chamber farthest from where the tape was. A window to record again. */
+export function retreat(thing: ThingState, patrolCells: readonly Cell[], from: Vec2): ThingState {
+  let far: Cell | null = null;
+  for (const c of patrolCells) {
+    if (!far || dist(cellCenter(c), from) > dist(cellCenter(far), from)) far = c;
+  }
+  return { ...thing, mode: 'wander', targetCell: far, huntCell: null, modeTicks: 0 };
 }
 
 export function startRush(thing: ThingState, act: number, huntCell: Cell): ThingState {
@@ -77,13 +87,15 @@ interface Walk {
   pos: Vec2;
   arrived: boolean;
   blockedDoor: number;
+  /** No way to its target right now: a shut gate, a guarded cell, or the sanctuary. */
+  stuck?: boolean;
 }
 
 /** One tick along a BFS path. A closed door in the way stops it. */
 function walkTo(ctx: ThingContext, pos: Vec2, target: Cell, speedMps: number, finalPoint?: Vec2): Walk {
   const path = findPath(ctx.pathGrid, cellOf(pos), target);
   // Behind a closed gate: nothing to walk along, so it waits.
-  if (path.length === 0) return { pos, arrived: false, blockedDoor: -1 };
+  if (path.length === 0) return { pos, arrived: false, blockedDoor: -1, stuck: true };
   const next = path[1];
   if (next) {
     const di = doorIndexAt(ctx.level, next);
@@ -119,8 +131,8 @@ export function stepThing(ctx: ThingContext, thing: ThingState, rngIn: number): 
   const covered = wellHidden(ctx);
 
   if (thing.mode === 'rush') {
-    const huntCell = covered && !ctx.rage ? (thing.huntCell ?? playerCell) : playerCell;
-    if (covered && !ctx.rage && dist(thing.pos, player.pos) <= TUNING.searchRadiusM) {
+    const huntCell = covered ? (thing.huntCell ?? playerCell) : playerCell;
+    if (covered && dist(thing.pos, player.pos) <= TUNING.searchRadiusM) {
       return {
         thing: { ...thing, mode: 'search', huntCell, modeTicks: secToTicks(TUNING.searchSec), doorTicks: 0 },
         rng,
@@ -128,10 +140,10 @@ export function stepThing(ctx: ThingContext, thing: ThingState, rngIn: number): 
         openedDoor: null,
       };
     }
-    const speed = ctx.rage ? TUNING.rageSpeedMps : perAct(TUNING.actRushSpeedMps, act);
+    const speed = perAct(TUNING.actRushSpeedMps, act);
     const walked = walkTo(ctx, thing.pos, huntCell, speed, player.pos);
     const door = pushDoor(thing, walked.blockedDoor);
-    const modeTicks = ctx.rage ? thing.modeTicks : thing.modeTicks - 1;
+    const modeTicks = thing.modeTicks - 1;
     if (modeTicks <= 0) {
       return {
         thing: { pos: walked.pos, mode: 'wander', targetCell: null, huntCell: null, modeTicks: 0, doorTicks: 0 },
@@ -193,10 +205,27 @@ export function stepThing(ctx: ThingContext, thing: ThingState, rngIn: number): 
   }
 
   const speed = mode === 'stalk' ? perAct(TUNING.actStalkSpeedMps, act) : perAct(TUNING.actWanderSpeedMps, act);
-  const walked = walkTo(ctx, thing.pos, targetCell, speed);
+  let walked = walkTo(ctx, thing.pos, targetCell, speed);
+  // The entry sanctuary: for the first seconds it does not come any closer to where you arrived
+  const entry = ctx.sanctuaryEntry;
+  if (entry) {
+    const now = dist(walked.pos, entry);
+    if (now < TUNING.entryKeepOutM && now < dist(thing.pos, entry)) walked = { pos: thing.pos, arrived: false, blockedDoor: -1, stuck: true };
+  }
   const door = pushDoor(thing, walked.blockedDoor);
 
   if (walked.arrived) {
+    modeTicks += 1;
+    const limit = mode === 'stalk' ? secToTicks(TUNING.stalkGiveUpSec) : secToTicks(TUNING.wanderPauseSec);
+    if (modeTicks >= limit) {
+      mode = 'wander';
+      const picked = pickCell(ctx, rng);
+      rng = picked.rng;
+      targetCell = picked.cell;
+      modeTicks = 0;
+    }
+  } else if (walked.stuck) {
+    // Blocked: wait a moment, then try somewhere else
     modeTicks += 1;
     const limit = mode === 'stalk' ? secToTicks(TUNING.stalkGiveUpSec) : secToTicks(TUNING.wanderPauseSec);
     if (modeTicks >= limit) {

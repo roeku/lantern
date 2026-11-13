@@ -7,9 +7,8 @@ import type { Cell } from './grid';
 import type { Level } from './level';
 import type { Vec2 } from './vec2';
 
-/** 'dormant' means no Thing lives in this chamber. */
-export type ThingMode = 'dormant' | 'wander' | 'stalk' | 'rush' | 'search';
-export type Finale = 'hold' | 'run';
+/** 'dormant': nothing here (or the follower is not behind you yet). 'shadow': it follows your route unseen and never attacks. */
+export type ThingMode = 'dormant' | 'shadow' | 'wander' | 'stalk' | 'rush' | 'search';
 
 export interface PlayerState {
   pos: Vec2;
@@ -66,7 +65,6 @@ export interface CatchRecord {
 export interface SimState {
   tick: number;
   rng: number;
-  finale: Finale;
   /** Index of the furthest chamber reached. Only ever goes up. */
   chamber: number;
   rec: EchoRecording;
@@ -94,8 +92,6 @@ export interface SimState {
   tapes: boolean[];
   vcrHoldTicks: number;
   exitOpen: boolean;
-  /** Run finale: the Thing hunts without giving up until you are out. */
-  rage: boolean;
   won: boolean;
   winTick: number;
   caughtCount: number;
@@ -103,6 +99,12 @@ export interface SimState {
   rewindTicksLeft: number;
   /** While above 0 the Thing does not move, hear or notice. Set by a catch. */
   thingGraceTicks: number;
+  /** Ticks the Thing has been chewing on your tape-self. At `tapeTearSec` it is gone. */
+  tearTicks: number;
+  /** While above 0 the Thing keeps out of the entry radius. Set on arrival and on waking. */
+  sanctuaryTicks: number;
+  /** Your recent route, for the unseen follower. */
+  trail: Vec2[];
   lastCatch: CatchRecord | null;
 }
 
@@ -145,9 +147,9 @@ export function actOf(state: Pick<SimState, 'chamber'>, level: Level = LEVEL): n
   return level.chambers[state.chamber]?.act ?? 3;
 }
 
-/** Lights are out. In the hold finale for the whole VCR room; in the run finale from the moment the tape plays. */
-export function isBlackout(state: Pick<SimState, 'chamber' | 'finale' | 'exitOpen'>, level: Level = LEVEL): boolean {
-  return state.finale === 'hold' ? state.chamber >= level.chambers.length - 1 : state.exitOpen;
+/** Lights are out in the VCR room. */
+export function isBlackout(state: Pick<SimState, 'chamber'>, level: Level = LEVEL): boolean {
+  return state.chamber >= level.chambers.length - 1;
 }
 
 export function createPlayer(pos: Vec2): PlayerState {
@@ -194,14 +196,13 @@ export function thingForChamber(level: Level, chamber: number, from: Vec2, rng: 
 
 export const IDLE_RECORDING: EchoRecording = { active: false, ticks: 0, start: null, log: [] };
 
-export function createState(seed: number, finale: Finale = 'hold', level: Level = LEVEL): SimState {
+export function createState(seed: number, level: Level = LEVEL): SimState {
   const start = level.checkpoints[0];
   if (!start) throw new Error('level has no start');
   const spawned = thingForChamber(level, 0, start, seed | 0);
   return {
     tick: 0,
     rng: spawned.rng,
-    finale,
     chamber: 0,
     rec: IDLE_RECORDING,
     ghost: null,
@@ -219,12 +220,14 @@ export function createState(seed: number, finale: Finale = 'hold', level: Level 
     tapes: level.tapes.map(() => false),
     vcrHoldTicks: 0,
     exitOpen: false,
-    rage: false,
     won: false,
     winTick: 0,
     caughtCount: 0,
     rewindTicksLeft: 0,
     thingGraceTicks: 0,
+    tearTicks: 0,
+    sanctuaryTicks: 0,
+    trail: [],
     lastCatch: null,
   };
 }

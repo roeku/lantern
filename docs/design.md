@@ -1,89 +1,99 @@
-# ⟨Rewind Night⟩: design v4
+# ⟨Rewind Night⟩: design v5
 
 *Kiroween 2026 · Resurrection (dead tech: VHS) with a Costume Contest angle · 11 November 2026.*
 *Placeholders are marked ⟨…⟩ and are the author's to replace: title, setting, names, any text. The v1 design (top-down, 1 vs 3) and its code were removed on 11 Nov; a backup tarball lives outside the repo.*
 
-*v4 (11 Nov, night): the author asked for a much bigger game; see "v4: the campaign" first. v3 below is now the first two tapes.*
+*v5: read "v5: depth, dread and finish" first. It replaces the v4 campaign proposal. v3 below is the raw material for tape 1.*
 
 *v3 (11 Nov, evening): the open shop with three tapes felt like a demo. The night is now a run of test chambers built on one tool, record and echo. The section "v3: the tape" below is the current design; where it disagrees with the older sections, v3 wins.*
 
-## v4: the campaign (current plan, 11 Nov evening)
+## v5: depth, dread and finish (current plan, set by the author)
 
-*The author asked for a much bigger game: "the near equivalent of a triple-A game", all remaining Kiro credits on this one project. Everything below the placeholders marked ⟨…⟩ is the assistant's proposal. v3 (the five chambers) becomes the first two tapes of the campaign.*
+*The author rejected v4 ("more of everything") after playtesting: one clip doing three jobs was already too much. v5 is bigger in depth, dread and finish, not in counts. A first playthrough of 20 to 25 minutes (about four times today), every minute at a finished standard, with replay value on top. v3's five chambers become the raw material for tape 1.*
 
-### What "bigger" means here
-More rooms with the same idea would only be longer. The game gets bigger by **changing what the tool can do** (Portal's lesson), **changing the world around it** (each tape is a different film), and **adding a reason to come back** (ranks, a ghost of your best run, a director's cut). A triple-A budget is not reachable in three weeks with no paid assets. The target is a game that feels authored and cohesive at the level of the best indie and jam entries, with the first 15 minutes (what judges actually play) held to the highest standard.
+### What the build tells us (12 / 18 on the feel audit)
+Protect: the Thing that only shows on the lens (raising the viewfinder and finding it already close is the best moment in the game); the tape-self as bait, which the Thing tears instead of you (the best mechanic, so the campaign is built around it, not around buttons); the footprints while recording and playing; "BE KIND. REWIND." and the SIGNAL LOST glitch; the viewfinder as the HUD; the end card that draws your route, your tape-selves and the Thing; instant R restart; the buffered record press; the start click doing nothing else; the TUNING block; the fixed-step sim.
 
-### Feel Brief, v4 (game-feel Step 0)
-1. **Verbs:** record, rewind, and now the whole VCR: pause, fast-forward, reverse, a second deck, dubbing over a playing tape. Look through the lens. Hide. Lure.
-2. **Feeling:** ⟨"I outsmarted the thing that hunts me using only my own past."⟩ Unchanged, and the campaign deepens it: first you use your past self, then you *direct* it.
-3. **Essence:** you can only be in one place, but you can be several times. Every level is a question about when to send which version of yourself where, under the eye of something that hears everything and can only be seen through the lens.
-4. **The specific thing:** the monster exists only on the lens, your tape-selves exist only off it, and the VCR's own buttons are the puzzle tools. Reverse play ("walk out of the gate you walked in through") is the one nobody else has.
-5. **References, for principles:** Portal (one tool, new gadgets, every room a question, a voice that teaches); Superhot (time as the mechanic, and the replay as the reward); Inscryption (the game lives inside a frame object: here, the rental shelf).
-6. **Tone and material:** dry wit over quiet dread. Plastic, magnetic tape, CRT glass, lino, rain. Each film adds its own material (suburban carpet, brushed steel, wood panelling).
-7. **Look:** the VHS palette stays the spine (near-black, fluorescent green-white, REC red, tape-blue). Each film gets one extra accent and its own lighting rig, grain and tint.
-8. **Session shape:** a campaign of eight tapes, about 40 minutes the first time, 4 to 7 minutes per tape. Escalates on tool count, Thing types and set pieces. Aftermath per tape: the dailies, a TV replay of your run with the Thing visible.
-9. **Closing test:** ⟨"I trapped it behind a door using my own past self as bait."⟩
+### Order of work: reveal first, video from day one
+The reveal ("it was standing behind you the whole time") was deferred three times (task 5, "still missing", then M3.4). It is the one thing a player would tell a friend about and the shot that ends the video. It is built in M1, not M3. The video and the Kiro write-up are 40% of the score and are planned and fed from the first gate, not the last three days.
 
-### The frame ⟨placeholder, the author's to replace⟩
-You are the night clerk of a video shop. The tapes on the shelf are cursed rentals; the VCR at the counter takes you into each film. The shelf is the level select (diegetic, with your medals on the boxes). The Thing is the tape-eater: it lives between the frames and can only be seen on tape. The tape's deadpan narrator (the training video in tape 1, then whatever is left of it) is the Portal-style voice that teaches.
+### How we are judged (official rules)
+- Deadline **Fri 4 Dec 2026, 2:00 pm Pacific**, no extensions. Submit on 3 Dec. Content freezes at noon on Tue 1 Dec.
+- Five criteria, 20% each: Potential Impact, Technological Implementation (how thoroughly and skillfully we use **Kiro**), Design, Innovation, Presentation (the video, under 3 minutes). Best Demo is a separate bonus.
+- "Judges are not required to test the Project": most will see 3 minutes of video and 5 to 10 minutes of play. The first 10 minutes carry the game.
+- Judging may use automated AI analysis, so the repo, README and `.kiro/` are read: keep them clean and accurate.
+- Required: a public GitHub repo with an open-source license in the About section, `/.kiro` at the root and not gitignored, a working URL, a public YouTube video, the Kiro write-up.
+- Category: **Resurrection**, bring dead technology back to life. A VCR is dead tech. The pitch and the video are built around that.
 
-### The VCR buttons (the tools, one new one every tape or two)
-| Button | Key | What your tape-self does | First taught in |
+### Feel Brief, v5
+1. **Verbs:** record, rewind, hold a plate with your tape-self, look through the lens, hide, lure. Later: pause, reverse, a second deck.
+2. **Feeling:** ⟨"I outsmarted the thing that hunts me using only my own past."⟩
+3. **Essence:** it hears everything and can only be seen through the lens; you can be in two places if you plan. The decision is when to send your past self, and whether to look.
+4. **The specific thing:** the monster is only on the lens, your tape-selves are only off it, and the reveal shows it was there all along. Not unique: record-and-replay puzzles, time reversal (Braid) and camera-rewind horror (TAPE: Unveil the Memories) exist. Ours is the combination, and the reveal.
+5. **References, for principles:** Portal (one tool, a voice that teaches, every room a question); Superhot (the replay as the reward); Inscryption (the game lives inside a frame object).
+6. **Tone:** dry wit over quiet dread. See `.kiro/steering/tone.md`.
+7. **Look:** one art kit. The VHS palette is the spine; each tape gets its own post-processing look.
+8. **Session shape:** a hub and four tapes (a fifth only if its gate passes), 20 to 25 minutes. After every tape you walk back into the store, the lights come up, and something in the store has changed. The hub is part of the horror, not a menu.
+9. **Closing test:** ⟨"It was standing behind me the whole time, and I sent my past self to hold the tape so I could get out."⟩
+
+### Frame: a VHS formats anthology ⟨names are the author's⟩
+Each tape is a different kind of VHS recording, all in or around the same store. One art kit, a different post-processing look per tape. It stays horror, stays VHS, and sells "Resurrection".
+| Tape | Recording type | Look | Teaches |
 |---|---|---|---|
-| REC / PLAY | F | Records a clip, rewinds you, plays it back | Tape 1 |
-| PAUSE | G | Freezes your tape-self where it is, holding a plate mid-pose; press again to let it carry on | Tape 2 |
-| FF | hold T | Plays your clip at double speed: the timing lever | Tape 3 |
-| REW | hold Y | Plays your clip backwards. Record walking *through* a gate, play it reverse and you walk back out | Tape 4 |
-| DECK 2 | tab | A second tape-self at once | Tape 5 |
-| DUB | with F while a tape-self plays | Record a new clip *alongside* a playing one, so you can layer yourself | Tape 6 |
+| 1 | Corporate training video | bright, cheerful, wrong; the narrator | REC and the tape-self (today's chambers 1 to 5, recut) |
+| 2 | Home movie | warm, handheld, a party that does not end | PAUSE |
+| 3 | Security tape | grey CCTV, a quad split | REVERSE, scouting |
+| 4 | Late-night broadcast | static, snow, one tall window | SECOND DECK, and it learns your tapes |
+| 5 | (only if gate 2 was clean) | ⟨the author decides⟩ | everything |
+Starship and Heist are out. The story, the Thing's nature, the voice lines and the tape names are the author's; I keep proposing options and marking placeholders.
 
-To make pause, fast-forward and reverse work, tape-selves are replayed from recorded **states** (position, facing, posture per tick) instead of re-running inputs. Collision and gates still apply to what they can touch. This is a sim rewrite and the first milestone.
+### Tools: keep three, each gets one tape
+PAUSE, REVERSE, SECOND DECK, in that order. Each: introduce it in safety, develop it, twist it with the Thing, combine it with what came before. **Cut:** fast-forward (a timing knob, not an idea), dub (overlaps the second deck, hard to read), gamepad, dynamic resolution, the director's cut, tapes 6 to 8, the extra monster types as separate monsters.
+Every new tape gets a twist on the Thing and tape-self pair, not just a button. The author picks which: decoy tapes (lure it with a noisy tape-self, then sneak past); scouting (the lens or a playback shows where it was); it learns your tapes (in the last tape it walks your recorded routes). **One Thing that escalates**, with behaviours that change from tape to tape (the Blind Listener and the Static become behaviours of the same Thing).
 
-### The campaign ⟨all film names and settings are placeholders⟩
-| # | Tape | Look | New tool or rule | The set piece |
+### Tracking error: what a replayed tape-self does when its path is blocked
+Under state replay a tape-self no longer collides. Decision: if its next recorded position is inside a wall or a shut gate, it **freezes and flickers in place** (a tracking error) for as long as it is blocked, then resumes. If the Thing tears it, it is gone as today. This is readable, fair and on theme: a rule players can learn and exploit, not a bug.
+
+### The instruction tape
+After 3 restarts in a room the narrator offers the instruction tape: a ghost of the solution plays. It fits the fiction and guarantees judges reach the reveal. The ghost is built from the room's solution script, recorded as inputs, so it is always correct.
+
+### The bar for "done"
+Nothing is done until it clears all of these:
+1. **Walked.** Someone played the room on the deployed URL, and the report says who: the author, a bot or a script.
+2. **Every weighted event has layers**, sound first, pitch varying between repeats: record, play, rewind, plate press, gate open, the Thing noticing you, being caught, tape end, the reveal.
+3. **R restarts in under 0.5 s** and shows what caught you.
+4. **Teaching by situation.** Guide text is a few words that fade once the player does the thing on purpose. All-caps sentences are a smell.
+5. **Every screen looks like a shipped game**: title, hub, pause, caught, tape end, reveal.
+6. **No placeholder text in a build the author plays**, unless it is on a list the author has seen (`docs/placeholders.md`).
+
+### Schedule and credit gates
+At each gate the author reads the credit balance from Kiro and tells me; I cannot see it. If a phase overspends by more than 25%, we cut a tape, never the polish.
+| Phase | Dates | Contents | Gate | Credits |
 |---|---|---|---|---|
-| 1 | Staff Orientation | corporate training video: bright, cheerful, wrong | REC | The narrator explains the tape. Gate, two plates (the current rooms 1 and 2, kept). |
-| 2 | Home Movies | family camcorder: warm carpet, a birthday that will not end | PAUSE | The Thing's first appearance, seen only on the lens at the party. |
-| 3 | Late Show | black-and-white horror: one tall window, fog | FF, the Blind Listener (hears only) | A long corridor chase where fast-forwarding your tape-self buys you the seconds. |
-| 4 | Starship | brushed steel, red alert, airlocks | REW | Airlocks that only open if you walk out of them backwards in time. |
-| 5 | Heist | security cameras, laser grids visible *only on the lens* | DECK 2, lens-only hazards | A vault with two tape-selves and a patrol you can only see through the camcorder. |
-| 6 | Infomercial | saturated, loud, too happy | DUB, the Static (drawn to a raised lens) | A room where the lens is a liability and the plates are on the other side of it. |
-| 7 | The Basement Tape | nobody rents this one; raw concrete, one bulb | all tools, two Things | Cage the Thing: lure it with a sprinting tape-self and close a gate on it. |
-| 8 | Closing Time | the real shop, after all | everything | The reveal. Play your whole night back on the TV and watch where it stood. |
+| Lockdown | Fri 13 to Sun 15 Nov | Commit on a branch; public repo with a license and `.kiro/`; static deploy; solution scripts for all five chambers in CI; the five fixes; a 3-minute shot list; steering docs | The author plays it from the URL and a stranger finishes it without help | 5% |
+| M1 Spine | Mon 16 to Fri 20 Nov | State replay with pause and reverse; data-driven levels; a minimal hub; **the reveal ending, built and working**; tape 1 recut | The author plays tape 1 through to the reveal on the URL | 30% |
+| M2 Dread | Sat 21 to Thu 26 Nov | Tapes 2 and 3 (adding the second deck); Thing behaviour v2; sound and adaptive music v1; a look per tape; the instruction tape; the aftermath | Two people who have never seen the game reach the reveal without help; note where each got stuck | 30% |
+| M3 Finish | Fri 27 Nov to Tue 1 Dec | Tape 4, tape 5 only if gate 2 was clean; ranks, ONE TAKE, the ghost; accessibility (reduce flicker, subtitles for key sounds); a low-quality preset; a feel audit and its top 5 | Content freeze at noon on Tue 1 Dec | 20% |
+| Ship | Tue 1 to Thu 3 Dec | Video, write-up, README, submit | Submitted 3 Dec | 5% |
+| Reserve | | | | 10% |
 
-Cut order if time runs short: 6, then 3, then 2 (tape numbers are merged, not dropped, so the tools still arrive in order). Tapes 1, 4, 5, 7, 8 are the spine.
+### Using Kiro on purpose (Technological Implementation, 20%)
+`docs/kiro-evidence.md` is written as we go, with dates and real examples.
+- **Specs:** one tape's full path from requirements to design to tasks to code.
+- **Steering:** `tone.md`, `difficulty.md`, `feel.md` and the TUNING conventions; note where steering changed the output.
+- **Hooks:** saving a level file runs its solution script and the "fails without the tool" check; completing a task appends to the evidence log; a commit is blocked on placeholder text that is not on the list.
+- **Property-based tests:** reverse of reverse is forward; replay is deterministic; **no soft-locks**: from any reachable state either the exit can be reached or R recovers (this would have caught the old chamber 4 trap).
+- **MCP:** a browser or Playwright MCP to screenshot every tape for the feel audit and to record b-roll for the video.
+- **A custom "playtester" agent:** runs the solution scripts, reports par times and jobs per clip.
+- **Powers, and IDE versus CLI:** try at least one of each and write down how they compare. The rules ask for experimentation.
 
-### Things that make it feel like a game of this size
-- **Hub:** the shop counter and shelf. Walk to it, pick a tape from the shelf, see your medals. Return between tapes. The old exit door is the end of the campaign.
-- **Mastery signals:** per tape a par for clips, time and catches, a medal for each, a ONE TAKE seal, and a **ghost of your best run** playing beside you in a re-run (the echo mechanic reused as a mastery tool).
-- **The dailies:** after each tape, a short TV replay of your run with the Thing visible, timecoded. Tape 8's version is the full reveal and the share frame.
-- **Director's cut:** after the campaign each tape gets one modifier (no lens battery, double Thing, a shorter tape) and a new par.
-- **Thing variety:** the Stalker (today), the Blind Listener (ignores the lens, hears footsteps, sprinting is fatal), the Static (drawn to the REC light, harmless if the lens stays down).
-- **Set pieces:** an authored moment per tape (the party, the airlock, the vault, the cage), scripted with the same sim rules, no cutscene engine.
-- **Camera and lens:** handheld sway, focus breathing, a bump on every rewind, FOV kicks, the lens dirtying as the battery dies.
-- **Light:** a lighting rig per film, fake volumetric light cards, dust in the beams, bloom, a colour grade per tape. Lights stay under the budget (constant count) so the shader never recompiles.
-- **Audio:** an adaptive score built from the B1 mains hum in layers (drone, pulse, arpeggio, noise) driven by tension, notice and rush; a bed per film; walls muffle sound (a raycast low-pass); the narrator speaks in synthesised blips; the mix ducks around events.
-- **Accessibility and comfort:** subtitles for key sounds, reduce flicker, hold-or-toggle for every input, shapes as well as colours for plates, a settings screen, gamepad support.
-- **Performance:** quality presets and dynamic resolution; the target is 60 fps on an M1 Air with the fans quiet. Already done: 1x render ratio, 2x MSAA, lights only near you.
+### The video, planned now (under 3 minutes, shown working end-to-end)
+Footage is collected at every gate. Shot list: `docs/video-shot-list.md`.
 
-### How we keep it shippable
-Four milestones. Each ends with a build that could be submitted. If time or credits run out, the last finished milestone is the game.
-| Dates | Milestone | Ends with |
-|---|---|---|
-| 11 to 15 Nov | **M1 Engine:** data-driven levels, state-based tape-selves (pause, fast-forward, reverse), two decks, a campaign save, the hub, a static deploy | Tapes 1 and 2 playable from the hub, deployed |
-| 16 to 21 Nov | **M2 Spine:** tapes 3 to 5, the Blind Listener, lens-only hazards, the adaptive score v1, the lighting rig per film | Five tapes, about 20 minutes, the best 15 minutes of the game |
-| 22 to 27 Nov | **M3 Finish:** tapes 6 to 8, the Static, the cage set piece, the dailies replay and the tape 8 reveal, ranks, ghost of your best run | The whole campaign |
-| 28 Nov to 1 Dec | **M4 Polish:** accessibility, gamepad, performance, balance from playtests, director's cut | A release candidate |
-| 1 to 3 Dec | Video (under 3 min), write-up, public repo with `.kiro/`, submit | Submitted by 3 Dec |
-
-### How credits are spent
-Large, well-tested slices, not long loops. Solvability is proved by tests that play scripted solutions (not by video bots, which are slow and expensive), and the one bot recording is saved for the submission video. Each milestone starts from a Kiro spec and ends with property tests. No credit goes to anything a free asset or a procedural trick can do.
-
-### Risks
-- **Art workload with no assets.** Mitigation: a small prop kit built from primitives, a strong VHS filter that makes simple shapes look intentional, and one accent colour per film.
-- **Reverse playback and layered tape-selves are hard to keep fair.** Mitigation: states instead of inputs, property tests (reverse of reverse is forward, fast-forward reaches the same end state, two tape-selves never share a slot), and a solution script per level that must pass in CI.
-- **A longer game hides the bad parts of the opening.** Mitigation: a new-player playtest after M1 and M2, before anything is added.
+### Verification rules (added after the author caught gaps)
+- "The tests pass" does not make a room done. A person walks it.
+- The e2e bot must cover every chamber, not 2 of 5. Anything I change gets walked or is reported as not walked.
+- I describe the levels from the level file, not from memory.
 
 ## Pitch
 First person, solo, about 6 minutes. You are alone in a video rental shop after closing, holding a camcorder. Something is in the shop with you, and **it only exists on tape**. With the lens down you see an empty, dim shop and hear something wrong. With the lens up you see it, but your view narrows, the battery drains, and a glowing REC light tells it exactly where you are.

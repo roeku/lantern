@@ -85,6 +85,8 @@ export class Game {
   private clipsByChamber: number[] = [];
   private caughtByChamber: number[] = [];
   private winStage = 0;
+  /** The browser refused the mouse. Shown on the title so the click does not seem to do nothing. */
+  private lockProblem = false;
   private chamberSec = 0;
   private seenChamber = 0;
   private captionLeft = 0;
@@ -110,7 +112,7 @@ export class Game {
   private lastPos: { x: number; y: number };
 
   constructor(root: HTMLElement) {
-    this.renderer = new GameRenderer(root);
+    this.renderer = new GameRenderer(root, this.settings.quality);
     this.hud = new Hud(root);
     this.input = new Input(this.renderer.canvas, this.settings);
     this.faceStart();
@@ -122,7 +124,11 @@ export class Game {
     this.gateAnim = this.curr.gates.map(() => 0);
     this.lastPos = { ...this.curr.player.pos };
 
+    this.input.onLockFailed(() => {
+      this.lockProblem = true;
+    });
     this.input.onLock((locked) => {
+      if (locked) this.lockProblem = false;
       // The first lock is the game's own first input: unlock audio here.
       if (locked) this.audio.unlock();
       this.audio.setPaused(!locked);
@@ -140,7 +146,7 @@ export class Game {
     // Dev builds accept ?seed=N so a run can be repeated. Stripped from production builds.
     const devSeed = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get('seed')) : 0;
     const seed = devSeed > 0 ? devSeed : Math.floor(Math.random() * 2 ** 31);
-    return createState(seed, this.settings.finale);
+    return createState(seed);
   }
 
   private restart(): void {
@@ -214,9 +220,9 @@ export class Game {
     else if (code === 'KeyT') s.lensToggle = !s.lensToggle;
     else if (code === 'KeyG') s.reducedEffects = !s.reducedEffects;
     else if (code === 'KeyV') s.showFps = !s.showFps;
-    else if (code === 'Digit1' || code === 'Digit2') {
-      s.finale = code === 'Digit1' ? 'hold' : 'run';
-      if (this.curr.tick === 0) this.prev = this.curr = this.newState();
+    else if (code === 'KeyB') {
+      s.quality = s.quality === 'medium' ? 'low' : 'medium';
+      this.renderer.setQuality(s.quality);
     } else return;
     saveSettings(s);
   }
@@ -375,6 +381,7 @@ export class Game {
       gates: this.gateAnim,
       ghost: ghostFrame,
       chamber: c.chamber,
+      thingNear: c.thing.mode !== 'dormant' && c.thing.mode !== 'shadow' && Math.hypot(c.thing.pos.x - p1.pos.x, c.thing.pos.y - p1.pos.y) < FEEL.thingNearWarnM,
       footprints: c.rec.active ? this.recordingPath : g ? this.footprints : [],
       footprintsDone: c.rec.active ? this.recordingPath.length : g ? Math.round((g.index / Math.max(1, g.log.length)) * this.footprints.length) : 0,
       recording: c.rec.active,
@@ -419,6 +426,8 @@ export class Game {
       notice: frozen ? 1 : c.notice,
       tick: c.tick,
       rewind,
+      lockProblem: this.lockProblem,
+      standingBy: !c.rec.active,
       objective: line?.objective ?? null,
       guide: line?.prompt ?? null,
       echo,
@@ -596,7 +605,7 @@ export class Game {
     if (after.exitOpen && !before.exitOpen) {
       this.audio.exitOpen();
       this.renderer.flash(0.6);
-      this.showBanner(after.finale === 'run' ? 'RUN' : 'THE DOOR IS OPEN', after.finale === 'run' ? 'IT IS COMING' : '');
+      this.showBanner('THE DOOR IS OPEN', '');
     }
     if (after.won && !before.won) {
       this.audio.win();

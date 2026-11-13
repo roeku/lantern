@@ -77,6 +77,10 @@ export interface HudFrame {
   tick: number;
   /** 0..1 */
   rewind: number;
+  /** The browser refused to lock the mouse. */
+  lockProblem: boolean;
+  /** Not recording a clip: the viewfinder says STBY, as a camcorder does. */
+  standingBy: boolean;
   /** The chamber's goal, top left, like a camcorder title. */
   objective: string | null;
   /** The next action, bottom centre. [KEY] words draw as key caps. */
@@ -159,7 +163,7 @@ export class Hud {
     if (f.playing && !f.win) this.drawEcho(f, w, h);
 
 
-    if (f.caption && f.caption.alpha > 0.01 && f.playing && !f.win) this.drawCaption(f.caption, w, h);
+    if (f.caption && f.caption.alpha > 0.01 && f.playing && !f.win) this.drawCaption(f.caption, w, h, f.lensRaise > 0.3);
 
     if (f.rewind > 0.01) this.drawRewind(f, w, h);
     if (f.win) this.drawWin(f, f.win, w, h);
@@ -195,14 +199,18 @@ export class Hud {
     }
 
     const s = this.px(2.5);
-    const blink = Math.floor(f.timeSec * 1.6) % 2 === 0;
+    // A camcorder says STBY until it is recording. The red dot is the tally light the Thing can see, so it stays on:
+    // steady while standing by, blinking while a clip records.
+    const blink = f.standingBy || Math.floor(f.timeSec * 1.6) % 2 === 0;
     if (blink) {
       ctx.fillStyle = REC_RED;
+      ctx.globalAlpha = a * (f.standingBy ? 0.7 : 1);
       ctx.beginPath();
       ctx.arc(m + len * 0.5 + s * 2, m + len * 0.5 + s * 3.5, s * 2.2, 0, Math.PI * 2);
       ctx.fill();
+      ctx.globalAlpha = a;
     }
-    drawText(ctx, 'REC', m + len * 0.5 + s * 6, m + len * 0.5, s, REC_RED);
+    drawText(ctx, f.standingBy ? 'STBY' : 'REC', m + len * 0.5 + s * 6, m + len * 0.5, s, f.standingBy ? FLUORESCENT : REC_RED);
     drawText(ctx, `TAPE ${f.tapes}/3`, m + len * 0.5 + s * 6, m + len * 0.5 + s * 10, s, f.tapes === 3 ? FLUORESCENT : DIM);
     drawText(ctx, 'PLAY', w / 2, m + len * 0.5, s, FLUORESCENT, 'center');
 
@@ -252,11 +260,13 @@ export class Hud {
       this.guide = f.guide;
       this.guideAt = f.timeSec;
     }
-    if (this.objective) {
+    const lensUp = f.lensRaise > 0.3;
+    // The viewfinder has its own readouts in that corner: the goal waits until the lens is down
+    if (this.objective && !lensUp) {
       const age = f.timeSec - this.objectiveAt;
       const shown = this.objective.slice(0, Math.floor(age * 40));
       const s = this.px(2.2);
-      const y = f.lensRaise > 0.01 ? Math.round(Math.min(w, h) * 0.06) + s * 26 : this.px(24);
+      const y = this.px(24);
       ctx.globalAlpha = age < 1.2 ? 1 : 0.6;
       drawText(ctx, `> ${shown}`, this.px(28), y, s, age < 1.2 ? FLUORESCENT : DIM);
       ctx.globalAlpha = 1;
@@ -265,8 +275,11 @@ export class Hud {
       const age = f.timeSec - this.guideAt;
       const rise = Math.max(0, 1 - age / 0.25);
       ctx.globalAlpha = Math.min(1, age / 0.2) * (age < 1 ? 1 : 0.85 + 0.15 * Math.sin(f.timeSec * 3));
-      // Low on the screen: the plate you are walking to sits at the bottom centre of the view
-      drawRich(ctx, this.guide, w / 2, h * 0.875 + rise * this.px(10), this.px(2.8), FLUORESCENT, TAPE_BLUE, 'center');
+      // Below the viewfinder frame when the lens is up, so it never covers what you are looking at; otherwise low on the
+      // screen, where the plate you are walking to sits
+      const m = Math.round(Math.min(w, h) * 0.06);
+      const gy = lensUp ? h - m + this.px(5) : h * 0.875;
+      drawRich(ctx, this.guide, w / 2, gy + rise * this.px(10), lensUp ? this.px(2.2) : this.px(2.8), FLUORESCENT, TAPE_BLUE, 'center');
       ctx.globalAlpha = 1;
     }
   }
@@ -314,10 +327,11 @@ export class Hud {
     }
   }
 
-  private drawCaption(c: Caption, w: number, h: number): void {
+  private drawCaption(c: Caption, w: number, h: number, lensUp: boolean): void {
     const { ctx } = this;
     const s = this.px(2);
-    const y = h * 0.95;
+    // With the lens up the guide sits under the frame, so the voice moves up a line
+    const y = lensUp ? h - Math.round(Math.min(w, h) * 0.06) - this.px(36) : h * 0.95;
     ctx.globalAlpha = c.alpha * 0.55;
     ctx.fillStyle = '#020303';
     // A band just wide enough for the line, so it never covers the readouts in the corners
@@ -519,7 +533,6 @@ export class Hud {
     const flick = f.timeSec % 7 > 6.85 ? 0.3 : 1;
     ctx.globalAlpha = flick;
     drawText(ctx, 'REWIND NIGHT', w / 2, h * 0.3, this.px(9), FLUORESCENT, 'center');
-    drawText(ctx, 'WORKING TITLE', w / 2, h * 0.3 + this.px(9) * 9, this.px(2), TAPE_BLUE, 'center');
 
     // First time: nothing to read. Click and the game teaches itself.
     if (!f.started) {
@@ -527,6 +540,13 @@ export class Hud {
       drawText(ctx, 'CLICK TO START', w / 2, h * 0.56, this.px(4), FLUORESCENT, 'center');
       ctx.globalAlpha = 0.6;
       drawText(ctx, 'HEADPHONES ON', w / 2, h * 0.56 + this.px(4) * 14, this.px(2.2), DIM, 'center');
+      if (f.lockProblem) {
+        // The browser refused the mouse. Say so, and say what usually fixes it.
+        ctx.globalAlpha = 0.95;
+        drawText(ctx, 'THE BROWSER WOULD NOT LET GO OF THE MOUSE', w / 2, h * 0.72, this.px(2.4), REC_RED, 'center');
+        ctx.globalAlpha = 0.75;
+        drawText(ctx, 'CLICK AGAIN. IF IT STILL FAILS, OPEN THE GAME IN ITS OWN TAB', w / 2, h * 0.72 + this.px(2.4) * 11, this.px(2), DIM, 'center');
+      }
       ctx.globalAlpha = 0.4;
       drawText(ctx, 'ESC PAUSES. SETTINGS ARE THERE', w / 2, h * 0.92, this.px(2), DIM, 'center');
       ctx.globalAlpha = 1;
@@ -540,7 +560,7 @@ export class Hud {
     const line = (i: number, text: string, color: string) => drawRich(ctx, text, w / 2, h * 0.56 + i * s * 12, s, color, color, 'center');
     line(0, `[-] [+] SENSITIVITY ${Math.round(st.sensitivity * 100)}%${st.sensitivity <= SENSITIVITY_MIN ? ' MIN' : st.sensitivity >= SENSITIVITY_MAX ? ' MAX' : ''}`, FLUORESCENT);
     line(1, `[T] LENS BUTTON: ${st.lensToggle ? 'TOGGLE' : 'HOLD'}   [G] EFFECTS: ${st.reducedEffects ? 'REDUCED' : 'FULL'}   [V] FPS: ${st.showFps ? 'ON' : 'OFF'}`, FLUORESCENT);
-    line(2, `[1] FINALE HOLD${st.finale === 'hold' ? ' <' : ''}   [2] FINALE RUN${st.finale === 'run' ? ' <' : ''}`, DIM);
+    line(2, `[B] QUALITY: ${st.quality === 'low' ? 'LOW' : 'MEDIUM'}`, FLUORESCENT);
     line(4, '[W] [A] [S] [D] MOVE  [SHIFT] RUN  [C] CROUCH  [F] RECORD  [E] USE', DIM);
     line(5, '[RIGHT MOUSE] LENS   [R] IN PLAY: START THE ROOM OVER', DIM);
     line(6, '[R] HERE: START THE WHOLE NIGHT OVER', DIM);

@@ -45,6 +45,10 @@ interface GateProp {
   group: THREE.Group;
   /** One lamp per plate that feeds it, in the same order as `plates`. */
   lamps: Array<{ mesh: THREE.Mesh; plate: number }>;
+  /** The lintel: red while the gate is shut, lit while it is open. Readable from across the room. */
+  lintel: THREE.Mesh;
+  /** A strip of light on the floor under an open gate. */
+  floor: THREE.Mesh;
 }
 
 /** Most footprints a clip can show. */
@@ -195,8 +199,17 @@ export class EchoProps {
         group.add(lamp);
         return { mesh: lamp, plate: x.i };
       });
+      const lintel = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.1, 1.0), new THREE.MeshBasicMaterial({ color: REC_RED, fog: false }));
+      lintel.position.y = 2.42;
+      const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.9, 0.9),
+        new THREE.MeshBasicMaterial({ color: FLUORESCENT, transparent: true, opacity: 0, depthWrite: false, fog: false }),
+      );
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = 0.014;
+      group.add(lintel, floor);
       this.group.add(group);
-      this.gates.push({ slats, panel, posts, group, lamps });
+      this.gates.push({ slats, panel, posts, group, lamps, lintel, floor });
     }
   }
 
@@ -265,7 +278,10 @@ export class EchoProps {
       const pm = g.panel.material as THREE.MeshBasicMaterial;
       pm.opacity = 0.14 * (1 - open);
       g.panel.visible = open < 0.98;
-      for (const l of g.lamps) (l.mesh.material as THREE.MeshBasicMaterial).color.copy(RED).lerp(LIT, f.plates[l.plate] ?? 0);
+      // A lamp is lit while its plate is held, and stays lit while the gate is open, so an open gate never shows red
+      for (const l of g.lamps) (l.mesh.material as THREE.MeshBasicMaterial).color.copy(RED).lerp(LIT, Math.max(f.plates[l.plate] ?? 0, open));
+      (g.lintel.material as THREE.MeshBasicMaterial).color.copy(RED).lerp(LIT, open);
+      (g.floor.material as THREE.MeshBasicMaterial).opacity = open * 0.3;
     });
 
     this.wires.forEach((m, i) => {

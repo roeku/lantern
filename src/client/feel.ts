@@ -31,6 +31,8 @@ export const FEEL = {
   footprintSpacingM: 0.45,
   /** The night map on the win card samples every this many ticks (4 per second). */
   nightSampleTicks: 15,
+  /** A tube stutters when something that hunts is this close. */
+  thingNearWarnM: 5,
   /** The tape-self is invisible closer than this to the camera, and fully shown this much further out. */
   ghostNearFadeStartM: 0.45,
   ghostNearFadeM: 0.6,
@@ -41,8 +43,8 @@ export const FEEL = {
    * The 3D view renders at most at this pixel ratio. A Retina screen at 2x is four times the pixels for a picture the
    * VHS pass grains over anyway. The HUD keeps the full ratio so text stays sharp.
    */
-  renderPixelRatioMax: 1,
-  msaaSamples: 2,
+  renderPixelRatioMax: { low: 1, medium: 1.5 },
+  msaaSamples: { low: 0, medium: 2 },
   /** On the title and pause screens the 3D view behind the overlay redraws only this often. */
   idleRenderIntervalSec: 0.25,
 
