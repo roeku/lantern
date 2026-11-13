@@ -1,61 +1,44 @@
-# Lantern
+# Rewind Night (working title)
 
-A 1 vs. 3 browser game. One Showman projects ghosts through smoke from a cart. Three Spectators carry candles through a dark hall and try to cut three ropes. This repo holds the playable vertical slice. The design lives in `docs/design.md`.
+A first-person horror game for Kiroween 2026. You are alone in a video rental shop after closing with a camcorder. Something is in the shop with you, and it only exists on tape. Looking through the lens is the only way to see it, and it is also what gets you caught.
+
+The design is in `docs/design.md`. Title, setting and text are placeholders.
 
 ## Requirements
-
 - Node.js and pnpm
-- `cloudflared` (only to play with friends over the internet)
 
 ```
 pnpm install
 ```
 
-## Run locally
-
+## Run
 ```
 pnpm dev
 ```
+Open `http://localhost:5173`. Click to lock the pointer. Headphones recommended.
 
-This starts the game server and the Vite dev server together and prints the local client URL.
+## How to play
+Find the 3 tapes, play them at the counter, get out. The Thing only exists on tape, and looking through the lens is what gets you caught.
 
-| Part | Default port | Notes |
-|---|---|---|
-| Client (Vite) | 5173 | Open `http://localhost:5173` |
-| Server | 2568 | Set `PORT` to change it, for example `PORT=3000 pnpm dev` |
+| Input | Action |
+|---|---|
+| WASD | Move |
+| Shift | Run (not with the lens up) |
+| C | Crouch. Crouch in a marked alcove with the lens down to hide |
+| Right mouse or Q | Lens (hold, or toggle in settings) |
+| E | Take a tape, open or close a door, hold at the counter to play the tapes |
+| R | Restart the night (when paused or on the end card) |
+| Esc | Pause and open settings |
 
-Vite proxies `/r/<CODE>` (WebSocket) and `/log/<CODE>` (HTTP) to the server, so one port serves the page and the game. If the server port is already in use, `pnpm dev` exits and names the port.
+Settings are on the pause screen: sensitivity, lens hold or toggle, reduced effects, FPS counter and the finale. Two-finger click is right mouse on a trackpad.
 
-## Play solo
+## Scripts
+| Command | What it does |
+|---|---|
+| `pnpm dev` | Vite dev server |
+| `pnpm build` | Typecheck and static build into `dist/` |
+| `pnpm test` | Vitest, including fast-check property tests |
+| `pnpm e2e` | Playwright (dev-only) |
 
-Open the client and press **Play solo**. You play the Showman against three bots. The sim runs in the browser and opens no WebSocket, so the server is not needed.
-
-## Play with friends (Join_Link)
-
-1. Run `pnpm dev` in one terminal.
-2. In a second terminal run the one tunnel command: `pnpm tunnel`. It runs `cloudflared tunnel --url http://localhost:5173` and prints a `https://<name>.trycloudflare.com` address.
-3. Open that address in your browser and create a room. You land on `/r/<CODE>` and become the Showman.
-4. In the lobby, press the copy control to copy the Join_Link (`https://<name>.trycloudflare.com/r/<CODE>`) and send it to your friends.
-5. Each friend opens the link and takes the next free seat as a Spectator. Open seats are filled by bots.
-6. The Showman presses start. After the show, press play again to rematch. The Showman role rotates to the next human.
-
-Quick tunnels get a new address each time. If the page is blocked with an unknown host error, add the tunnel host to `server.allowedHosts` in `vite.config.ts`.
-
-## Controls
-
-- Showman: W/S roll the cart, Shift rush, 1/2/3 puff vents, mouse aims the beam.
-- Spectator: W/A/S/D move, Space shield or unshield, left mouse fan, E cut a rope.
-
-## Tests
-
-```
-pnpm test        # vitest, unit and property tests (runs once)
-pnpm typecheck   # tsc --noEmit
-pnpm e2e         # Playwright, two browser pages on one Join_Link
-```
-
-`pnpm e2e` needs browsers installed once: `pnpm exec playwright install chromium`. A failing property test prints its seed and shrunk counterexample.
-
-## Playtesting
-
-Use `docs/playtest-checklist.md` to run and record the Milestone 1 test.
+## Kiro
+Specs, steering and hooks are in `.kiro/`. The evidence log is `docs/kiro-evidence.md`.

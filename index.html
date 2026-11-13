@@ -3,28 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lantern</title>
+    <title>Rewind Night</title>
     <style>
       html,
       body {
         margin: 0;
         height: 100%;
-        background: #0b0a0d;
+        background: #050607;
         overflow: hidden;
+        user-select: none;
+        -webkit-user-select: none;
       }
       #root {
         position: fixed;
         inset: 0;
       }
-      .game-canvas {
-        position: absolute;
-        inset: 0;
+      canvas {
+        display: block;
         width: 100%;
         height: 100%;
-        display: block;
-      }
-      .game-canvas[hidden] {
-        display: none;
+        outline: none;
       }
     </style>
   </head>

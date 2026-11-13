@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Run sim tests on save",
+      "trigger": "PostFileSave",
+      "description": "Runs the sim property tests whenever a file under src/sim changes.",
+      "matcher": "src/sim/.*\\.ts$",
+      "action": {
+        "type": "command",
+        "command": "pnpm vitest run tests/sim",
+        "timeout": 120
+      }
+    }
+  ]
+}

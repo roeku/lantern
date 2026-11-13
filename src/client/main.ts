@@ -1,13 +1,12 @@
-import './ui/styles.css';
-import { App, type SessionTarget } from './app';
-
-const ROOM_PATH = /^\/r\/([^/]+)\/?$/;
-
-function initialTarget(): SessionTarget | null {
-  const m = ROOM_PATH.exec(location.pathname);
-  return m ? { kind: 'join', code: m[1]!.toUpperCase() } : null;
-}
+import * as sim from '../sim';
+import { Game } from './game';
 
 const root = document.getElementById('root');
-if (root === null) throw new Error('missing #root element');
-new App(root).run(initialTarget());
+if (!root) throw new Error('missing #root');
+const game = new Game(root);
+
+// Dev only: lets the Playwright check drive and read the game. Stripped from production builds.
+if (import.meta.env.DEV) {
+  (window as unknown as { __game?: Game; __sim?: typeof sim }).__game = game;
+  (window as unknown as { __sim?: typeof sim }).__sim = sim;
+}

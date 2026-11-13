@@ -1,294 +1,121 @@
 /**
- * Every tuning number for the smoke and projection simulation lives here.
- * Rule code reads these values and contains no other numeric constants
- * (apart from the literals 0 and 1).
+ * Every sim tuning number lives here. Names carry the unit.
+ * Starting values are guesses to be tuned in playtests (see docs/design.md).
+ * Per-act arrays are indexed by act - 1 (act 1 Closing, act 2 Rain, act 3 Blackout).
  */
+export const TUNING = {
+  // Time
+  tickHz: 60,
 
-export interface Tuning {
-  /** Tick length in seconds. */
-  tickS: number;
-  /** Show length in seconds. */
-  showLengthS: number;
+  // Player movement
+  walkSpeedMps: 1.8,
+  sprintSpeedMps: 4.2,
+  crouchSpeedMps: 0.9,
+  /** Walking speed multiplier at full lens raise. Sprinting is impossible with the lens up. */
+  lensMoveSpeedFactor: 0.6,
+  accelMps2: 14,
+  playerRadiusM: 0.3,
+  eyeHeightStandM: 1.6,
+  eyeHeightCrouchM: 1.0,
+  maxPitchRad: 1.45,
+  /** Below this speed the player makes no walking noise. */
+  movingSpeedMps: 0.3,
 
-  /** Room size in metres. Both must be positive integers. */
-  roomWidthM: number;
-  roomDepthM: number;
+  // Lens
+  normalFovDeg: 78,
+  lensFovDeg: 42,
+  lensRaiseTimeSec: 0.18,
+  /** The lens counts as up (REC light on, Thing visible) once raise passes this. */
+  lensVisibleRaise: 0.6,
+  /** Anything inside this angle from the look direction is on the tape. Wider than the frame. */
+  lensVisibleHalfAngleDeg: 40,
+  /** The focus box. Only the Thing inside this angle fills the notice meter. */
+  lensNoticeHalfAngleDeg: 18,
+  lensRangeM: 14,
+  batteryLifeSec: 90,
+  batteryRechargePerSec: 1 / 225,
+  /** After the battery dies the lens stays locked until it recharges to this level. */
+  batteryUnlockLevel: 0.1,
+  /** Finding a tape tops the battery up by this much. */
+  tapeBatteryBonus: 0.5,
 
-  /** Puff: density added and radius around a vent. */
-  puffDensity: number;
-  puffRadiusM: number;
+  // Notice meter
+  noticeFillPerSec: 0.4,
+  /** Fill multiplier when the Thing can also see the REC light. */
+  recLightFillMultiplier: 2,
+  /** Extra fill from the REC light alone, even when the Thing is not in the focus box. */
+  recLightFillPerSec: 0.1,
+  recLightRangeM: 6,
+  noticeDecayPerSec: 0.25,
 
-  /** Smoke: per-second decay and spread rates. */
-  smokeDecayPerS: number;
-  smokeSpreadPerS: number;
+  // The Thing
+  thingCenterHeightM: 1.1,
+  thingRadiusM: 0.35,
+  noiseWalkRadiusM: 2.5,
+  noiseSprintRadiusM: 8,
+  catchRadiusM: 0.8,
+  actWanderSpeedMps: [0.7, 0.9, 1.1],
+  actStalkSpeedMps: [1.0, 1.2, 1.5],
+  /** Act 1 rush is slower than a sprint on purpose: it teaches that running works, once. */
+  actRushSpeedMps: [3.0, 5.0, 5.2],
+  actRushDurationSec: [4, 6, 7],
+  /** After a rush ends the meter cannot fill for this long. */
+  actRushCooldownSec: [6, 4, 2.5],
+  actNoticeFillScale: [0.8, 1, 1.2],
+  wanderPauseSec: 2,
+  stalkGiveUpSec: 3,
+  /** Doors slow the Thing but do not stop it. */
+  doorBreakSec: 2.0,
 
-  /** Solidity: threshold is solidityThresholdBase x imageScale^2. */
-  solidityThresholdBase: number;
+  // Hiding
+  /** A rushing Thing this close to a hidden player stops and searches. */
+  searchRadiusM: 1.8,
+  searchSec: 3.5,
 
-  /** Cart travel limit (m), roll and rush speeds (m/s). */
-  cartTravelMaxM: number;
-  cartRollSpeedMps: number;
-  cartRushSpeedMps: number;
-  /** Beam origin is (cartOriginXM, cartTrackStartYM + travel). */
-  cartOriginXM: number;
-  cartTrackStartYM: number;
+  // Interaction
+  interactRangeM: 1.6,
+  interactHalfAngleDeg: 55,
+  /** Closing a door is refused if anyone stands this close to it. */
+  doorClearM: 1.0,
 
-  /** Image scale is linear in travel between these bounds. */
-  imageScaleMin: number;
-  imageScaleMax: number;
+  // Finale
+  vcrHoldSecHold: 20,
+  vcrHoldSecRun: 2,
+  /** Progress lost per second when you let go, as a fraction of the fill rate. */
+  vcrDecayFactor: 0.5,
+  /** Holding the VCR is loud. The Thing hears it from this far. */
+  vcrNoiseRadiusM: 9,
+  /** In the run finale the Thing hunts without ever giving up, a little slower than a sprint. */
+  rageSpeedMps: 4.0,
+  winRadiusM: 1.0,
 
-  /** Beam cone half-angle (radians) and placeholder slide reach (m). */
-  beamHalfAngleRad: number;
-  placeholderSlideReachM: number;
+  // Rewind
+  rewindRestartSec: 0.4,
+  /** On rewind the Thing respawns at least this far from you when the level allows it. */
+  thingRespawnMinDistM: 10,
+  /** After a catch the Thing stands still and deaf this long, so waking up is never an instant second catch. */
+  wakeGraceSec: 3,
 
-  /** Fan: radius (m), duration (s) and cooldown (s). */
-  fanRadiusM: number;
-  fanDurationS: number;
-  fanCooldownS: number;
+  // Echo: record a clip of yourself, rewind, and your tape-self plays it back beside you
+  /** The tape runs out and stops itself after this long. */
+  recordMaxSec: 15,
+  /** A clip shorter than this is thrown away. */
+  recordMinSec: 0.6,
+  /** A body counts as standing on a plate inside this distance of its centre. */
+  plateRadiusM: 0.55,
+  /** Walk over a tape to take it. */
+  tapePickupRadiusM: 0.8,
+} as const;
 
-  /** Snuff radius at image scale 1 (m). */
-  snuffRadiusBaseM: number;
+export const DT_SEC = 1 / TUNING.tickHz;
 
-  /** Vent positions as [x, y] metres. */
-  ventPositions: [number, number][];
-
-  /** Seed used when a caller gives none. */
-  rngSeedDefault: number;
-
-  /** Player id of the Showman in a new round. */
-  showmanIdDefault: number;
-  /** Starting beam angle in radians (pi/2 points from the cart toward the audience, +y). */
-  beamAngleDefaultRad: number;
-  /** Spectator start positions as [x, y] metres, exactly 3. Each Candle starts at its owner's position. */
-  spectatorStartPositions: [number, number][];
-
-  /** Number of ropes. Must equal ropePositions.length. */
-  ropeCount: number;
-  /** Rope positions as [x, y] metres. Ids are the list indexes. */
-  ropePositions: [number, number][];
-  /** Candle light radius when lit (m). */
-  litCandleRadiusM: number;
-  /** Candle light radius when shielded (m). */
-  shieldedCandleRadiusM: number;
-  /** Spectator walking speed (m/s). */
-  spectatorSpeedMps: number;
-  /** Furthest a Spectator can aim a fan from themselves (m). Client only. */
-  fanReachM: number;
-  /** A ghost this close to an unsnuffed candle counts as a near miss (m). */
-  nearMissRadiusM: number;
-  /** A rope is cut after its cutter holds the cut for this long (s). */
-  ropeCutHoldS: number;
-  /** A cutter's candle must be within this distance of the rope (m, inclusive). */
-  ropeCutRadiusM: number;
-
-  /** Spectator bots: how far beyond the snuff radius a bot starts to react (m). */
-  botWarnMarginM: number;
-  /** Spectator bots: chance per tick, in (0, 1], that a bot acts. Sets its reaction time. */
-  botReactChancePerTick: number;
-  /** Spectator bots: the first bot starts cutting its rope this long into the show (s). */
-  botCutStartS: number;
-  /** Spectator bots: each next bot starts cutting this much later than the one before (s). */
-  botCutStaggerS: number;
+export function secToTicks(sec: number): number {
+  return Math.round(sec * TUNING.tickHz);
 }
 
-export const TUNING: Tuning = {
-  tickS: 0.05,
-  showLengthS: 300,
-
-  roomWidthM: 16,
-  roomDepthM: 12,
-
-  puffDensity: 0.6,
-  puffRadiusM: 2,
-
-  smokeDecayPerS: 0.05,
-  smokeSpreadPerS: 0.2,
-
-  solidityThresholdBase: 0.5,
-
-  cartTravelMaxM: 8,
-  cartRollSpeedMps: 1,
-  cartRushSpeedMps: 4,
-  cartOriginXM: 8,
-  cartTrackStartYM: 2,
-
-  imageScaleMin: 0.6,
-  imageScaleMax: 1.3,
-
-  beamHalfAngleRad: 0.15,
-  placeholderSlideReachM: 12,
-
-  fanRadiusM: 2,
-  fanDurationS: 3,
-  fanCooldownS: 8,
-
-  snuffRadiusBaseM: 0.6,
-
-  ventPositions: [
-    [2.5, 6],
-    [8, 11],
-    [13.5, 6],
-  ],
-
-  rngSeedDefault: 1,
-
-  showmanIdDefault: 0,
-  beamAngleDefaultRad: Math.PI / 2,
-  spectatorStartPositions: [
-    [2.5, 1.5],
-    [13.5, 1.5],
-    [8.5, 4.5],
-  ],
-  ropeCount: 3,
-  // Two far corners and one near the cart track, so cutting means leaving cover.
-  ropePositions: [
-    [2.5, 9.5],
-    [13.5, 9.5],
-    [8.5, 6.5],
-  ],
-  ropeCutHoldS: 4,
-  ropeCutRadiusM: 1,
-  litCandleRadiusM: 3,
-  shieldedCandleRadiusM: 1,
-  spectatorSpeedMps: 3,
-  fanReachM: 4,
-  nearMissRadiusM: 1,
-
-  botWarnMarginM: 1.5,
-  botReactChancePerTick: 0.25,
-  // Bots start cutting at 60 s, 90 s and 120 s of a 300 s show, so the Showman has time to play.
-  botCutStartS: 60,
-  botCutStaggerS: 30,
-};
-
-/** Fields that must be finite numbers greater than 0. */
-const POSITIVE_FIELDS = [
-  'tickS',
-  'showLengthS',
-  'roomWidthM',
-  'roomDepthM',
-  'puffDensity',
-  'puffRadiusM',
-  'smokeDecayPerS',
-  'smokeSpreadPerS',
-  'solidityThresholdBase',
-  'cartTravelMaxM',
-  'cartRollSpeedMps',
-  'cartRushSpeedMps',
-  'imageScaleMin',
-  'imageScaleMax',
-  'beamHalfAngleRad',
-  'placeholderSlideReachM',
-  'fanRadiusM',
-  'fanDurationS',
-  'fanCooldownS',
-  'snuffRadiusBaseM',
-  'botWarnMarginM',
-  'botReactChancePerTick',
-  'ropeCutHoldS',
-  'ropeCutRadiusM',
-  'ropeCount',
-  'litCandleRadiusM',
-  'shieldedCandleRadiusM',
-  'spectatorSpeedMps',
-  'fanReachM',
-  'nearMissRadiusM',
-] as const;
-
-/** Fields that must be finite numbers, zero allowed, never negative. */
-const NON_NEGATIVE_FIELDS = ['botCutStartS', 'botCutStaggerS'] as const;
-
-/** Fields that must be finite numbers (zero is allowed). */
-const FINITE_FIELDS = [
-  'cartOriginXM',
-  'cartTrackStartYM',
-  'rngSeedDefault',
-  'showmanIdDefault',
-  'beamAngleDefaultRad',
-] as const;
-
-/** Spectator seats in a round (four players minus the Showman). */
-const SPECTATOR_COUNT = 3;
-
-function isFiniteNumber(v: unknown): v is number {
-  return typeof v === 'number' && Number.isFinite(v);
-}
-
-/**
- * Throws an Error naming the invalid field when the tuning cannot be used.
- * Accepts unknown shapes at runtime so missing fields are reported by name.
- */
-export function validateTuning(t: Tuning): void {
-  const r = t as unknown as Record<string, unknown>;
-
-  for (const name of POSITIVE_FIELDS) {
-    const v = r[name];
-    if (!isFiniteNumber(v) || v <= 0) {
-      throw new Error(`Invalid TUNING field "${name}": must be a finite number greater than 0`);
-    }
-  }
-  for (const name of NON_NEGATIVE_FIELDS) {
-    const v = r[name];
-    if (!isFiniteNumber(v) || v < 0) {
-      throw new Error(`Invalid TUNING field "${name}": must be a finite number, 0 or greater`);
-    }
-  }
-  for (const name of FINITE_FIELDS) {
-    if (!isFiniteNumber(r[name])) {
-      throw new Error(`Invalid TUNING field "${name}": must be a finite number`);
-    }
-  }
-  for (const name of ['roomWidthM', 'roomDepthM'] as const) {
-    if (!Number.isInteger(r[name])) {
-      throw new Error(`Invalid TUNING field "${name}": must be a positive integer`);
-    }
-  }
-
-  for (const name of ['ventPositions', 'spectatorStartPositions', 'ropePositions'] as const) {
-    const list = r[name];
-    const bad = `Invalid TUNING field "${name}": must be a list of [x, y] pairs`;
-    if (!Array.isArray(list)) throw new Error(bad);
-    for (const v of list as unknown[]) {
-      if (!Array.isArray(v) || v.length !== 2 || !isFiniteNumber(v[0]) || !isFiniteNumber(v[1])) {
-        throw new Error(bad);
-      }
-    }
-  }
-
-  if (!Number.isInteger(t.ropeCount)) {
-    throw new Error('Invalid TUNING field "ropeCount": must be a positive integer');
-  }
-  if (t.ropePositions.length !== t.ropeCount) {
-    throw new Error('Invalid TUNING field "ropePositions": length must equal ropeCount');
-  }
-  if (t.spectatorStartPositions.length !== SPECTATOR_COUNT) {
-    throw new Error(
-      `Invalid TUNING field "spectatorStartPositions": must hold exactly ${SPECTATOR_COUNT} positions`,
-    );
-  }
-  for (const name of ['ropePositions', 'spectatorStartPositions'] as const) {
-    for (const [x, y] of t[name]) {
-      if (x < 0 || x > t.roomWidthM || y < 0 || y > t.roomDepthM) {
-        throw new Error(`Invalid TUNING field "${name}": every position must lie inside the room`);
-      }
-    }
-  }
-
-  if (t.botReactChancePerTick > 1) {
-    throw new Error('Invalid TUNING field "botReactChancePerTick": must not exceed 1');
-  }
-  if (t.imageScaleMax < t.imageScaleMin) {
-    throw new Error('Invalid TUNING field "imageScaleMax": must not be less than imageScaleMin');
-  }
-  if (t.solidityThresholdBase * t.imageScaleMax * t.imageScaleMax > 1) {
-    throw new Error(
-      'Invalid TUNING field "solidityThresholdBase": solidityThresholdBase x imageScaleMax^2 must not exceed 1',
-    );
-  }
-  // 4 x spread coefficient must stay at or under 1 for stable diffusion.
-  if (4 * t.smokeSpreadPerS * t.tickS > 1) {
-    throw new Error(
-      'Invalid TUNING field "smokeSpreadPerS": 4 x smokeSpreadPerS x tickS must not exceed 1',
-    );
-  }
+/** Reads a per-act tuning array. Act is 1 to 3. */
+export function perAct(values: readonly number[], act: number): number {
+  const v = values[Math.max(0, Math.min(values.length - 1, act - 1))];
+  if (v === undefined) throw new Error('empty per-act tuning');
+  return v;
 }

@@ -1,45 +1,34 @@
----
-inclusion: always
----
-
 # Product rules
 
-## Roles (MVP: 1 Showman vs 3 Spectators; bots fill empty seats)
-- Showman verbs: aim beam, roll cart (grow/shrink ghost), puff smoke from one of 3 vents, swap slides.
-- Showman sees only what the beam lights, plus any lit candle.
-- Spectator verbs: move, light/shield candle, fan (clear smoke briefly), cut rope (needs lit candle).
-- Spectators see their own candle radius, solid ghosts and smoke.
-- Snuffed Spectators stay on the audience side. They may ping the cart position once per pingCooldownSec.
+Source of truth: `docs/design.md`. If this file and the design disagree, fix the one that is wrong and say so.
 
-## Win conditions
-- Showman wins: every candle snuffed, OR the show ends with any rope still standing.
-- Spectators win: all 3 ropes cut before the show ends.
-- The show ends when the screen falls (last rope cut) or the convent bell tolls (time up).
-- A duplicate snuff event counts once.
+## What the game is
+First-person, solo, a campaign of about 40 minutes (see Scope). The player is alone in a video rental shop after closing, holding a camcorder. A Thing is in the shop and it exists only on tape. The viewfinder is the player's sight, clue reader and danger all at once.
 
-## Slides (MVP: exactly 2, clearly different uses)
-- Wraith: large, slow, lingering. Blocks an area. Drifts toward the nearest lit candle inside the beam.
-- Skull: small, fast. Lunges along the beam when the cart rushes.
-- Slide 2 unlocks in act 2. New slides must be added through the slide registry.
+## Core rule
+- Lens down: the player sees a dim, empty shop and hears the Thing. The Thing is not visible.
+- Lens up: the Thing is visible (if in the cone, in line of sight, battery above 0). The view narrows, the battery drains, the REC light shows the player's position to the Thing.
+- The Thing's notice meter fills while the player's lens cone is on it. When it fills, the Thing rushes.
+- Nothing else in the game may let the player see the Thing without the lens, except the end replay.
 
-## Show shape
-- One show = three acts. Each act unlocks more smoke.
-- After the show: house lights up, then a top-down match replay.
-- Replay shows cart route, beam sweeps, each snuff, near misses (ghost within 1 m that did not snuff), last rope.
-- A still frame of the replay is the share card.
+## Roles and verbs
+Player verbs: raise or lower the lens, move, sprint (loud), crouch, hide, interact (take a tape, play a tape), shut a door.
+The Thing: wander, stalk noise, notice, rush, give up. It never cheats vision: it notices through the same cone, line-of-sight and noise rules the player can learn.
 
-## MVP scope
-In:
-- One room, 1 Showman vs 3 Spectators, 2 slides, 3 ropes.
-- Spectator bots so a solo player can be the Showman.
-- Join by link.
-- The replay.
+## Show shape (v3: the first two tapes; v4 grows this into the campaign)
+- One night, three acts, about 6 minutes. Act 1 Closing (slow Thing, find tape 1). Act 2 Rain (stalks sound, first chase, tape 2). Act 3 Blackout (rushes more, lights fail, hold at the VCR to play the last tape).
+- Death is a rewind: back to the last checkpoint in under 0.5 s on the same key. Found tapes stay found.
+- Aftermath: lights up, silence, then the camcorder footage plays back on a TV with the Thing always visible. A still frame is the share card.
 
-Stretch: Showman bot (so a solo player can be a Spectator).
+## Fairness
+- The player can always learn why they were caught: the rewind shows the cause.
+- A checkpoint respawn is never within reach of a rush.
+- Running in a straight line never beats a rush. Hiding spots and doors do.
 
-Out (do not build):
-- In-game voice.
-- More players, rooms or slides.
-- Steam build.
-- Switching snuffed players to the Showman side (later playtest experiment).
-- Any paid service, plan or API.
+## Scope (v4: the campaign, set by the author on 11 Nov)
+In: a hub and eight tapes (levels), each its own film with its own look, the VCR tools (record, pause, fast-forward, reverse, a second deck, dub), three kinds of Thing, lens-only hazards, ranks and a ghost of your best run, the dailies replay and the tape 8 reveal, an adaptive score, accessibility options, gamepad, a campaign save in localStorage, a static deploy.
+The plan, milestones and cut order live in `docs/design.md` ("v4: the campaign"). If this file and the design disagree, fix the one that is wrong and say so.
+Out (do not build): multiplayer, servers, accounts, in-game voice acting, a Steam build, any paid service, plan or API.
+
+## Placeholders
+The title, setting, feeling line and closing line in the design are placeholders owned by the author. Do not invent new story, names or lore. Ask or mark a placeholder.
